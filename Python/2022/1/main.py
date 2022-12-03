@@ -21,4 +21,23 @@ def soln_1():
     
     copy_ans(max(total_cals))
  
-soln_1()
+# soln_1()
+
+def soln_2():
+    # preprocessing on file to isolate elfs
+    with open("input.txt") as file:
+        raw = file.read().rstrip() # all the data
+        elf_isolation = list(raw.split("\n\n")) # double lines split elfs
+        elf_isolation = [string.split('\n') for string in elf_isolation] # splits the calories into separate strings
+
+        # converts all strings into ints
+        for elf in range(len(elf_isolation)):
+            elf_isolation[elf] = [int(string) for string in elf_isolation[elf]]
+        
+        # totals all calories per elf
+        total_cals = [sum(elf) for elf in elf_isolation]
+    
+    total_cals.sort()
+    copy_ans(sum(total_cals[-3:len(total_cals)]))
+
+soln_2()
