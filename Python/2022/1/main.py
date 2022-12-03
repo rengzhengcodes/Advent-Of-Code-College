@@ -19,4 +19,4 @@ def soln_1():
         # totals all calories per elf
         total_cals = [sum(elf) for elf in elf_isolation]
     
-    copy_ans(str(max(total_cals)))
+    print(max(total_cals))
