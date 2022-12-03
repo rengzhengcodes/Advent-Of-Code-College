@@ -33,4 +33,4 @@ def copy_ans(ans:str) -> None:
     ans:
         string to be copied
     """
-    pyperclip.copy("test")
+    pyperclip.copy(ans)
