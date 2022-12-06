@@ -12,3 +12,7 @@ import pandas as pd
 import regex as re
 
 fetch_input(7, 2022)
+
+def soln_1():
+    with open("input.txt", 'r') as file:
+        raw = file.read().strip()
