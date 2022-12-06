@@ -18,9 +18,9 @@ def soln_1():
     with open("input.txt", 'r') as file:
         raw = file.read().strip()
     
-    for i in range(0, len(raw) - 4):
-        if len(set(raw[i:i+4])) == 4:
-            print(i + 4)
+    for i in range(0, len(raw) - 4): # makes sure there's no index errors
+        if len(set(raw[i:i+4])) == 4: # makes sure there's over 4 unique characters
+            print(i + 4) # prompt asks for # of words processed
             copy_ans(i + 4)
             break
     
@@ -30,9 +30,9 @@ def soln_2():
     with open("input.txt", 'r') as file:
         raw = file.read().strip()
     
-    for i in range(0, len(raw) - 14):
-        if len(set(raw[i:i+14])) == 14:
-            print(i + 14)
+    for i in range(0, len(raw) - 14): # makes sure that there's no EOL line
+        if len(set(raw[i:i+14])) == 14: # makes sure there's over 14 unique characters
+            print(i + 14) # # of characters processed
             copy_ans(i + 14)
             break
 
