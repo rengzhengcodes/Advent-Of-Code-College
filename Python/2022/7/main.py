@@ -16,3 +16,8 @@ fetch_input(7, 2022)
 def soln_1():
     with open("input.txt", 'r') as file:
         raw = file.read().strip()
+
+soln_1()
+
+def soln_2():
+    pass
