@@ -28,7 +28,7 @@ def soln_1():
         instructions = raw.split('\n')
         instructions = [tuple(instruction.split(' ')) for instruction in instructions]
     
-    # 1-indexed cycles, not 0-indexed
+    # 1-indexed cycles, not 0-indexed. "During" keyword makes it one indexed.
     cycle:int = 1
     # x register
     x:int = 1
