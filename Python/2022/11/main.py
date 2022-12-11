@@ -17,6 +17,8 @@ import pandas as pd
 import regex as re
 # imports add for map
 from operator import add
+# removes indent from multiline strings
+from textwrap import dedent
 
 fetch_input(11, 2022)
 
@@ -42,15 +44,63 @@ def soln_1():
             self.test:str = test
             # what the monkey does after it does its test
             self.test_results:tuple = test_results
+            # amount of inspections conducted
+            self.inspections = 0
         
         def __str__(self):
-            return f"""
-{self.name}:
-    Starting items: {self.items}
-    Operation: {self.operation}
-    Test: {self.test}
-        Results: {self.test_results}
+            return dedent(f"""
+            {self.name}:
+                Starting items: {self.items}
+                Operation: {self.operation}
+                Test: {self.test}
+                    Results: {self.test_results}
+            """)
+        
+        def monkey_business(self, monkey_list:list):
             """
+            Runs the monkey
+            """
+            # updates inspections, but before they're run as the # of inspections is predictable
+            self.inspections += len(self.items)
+            # goes through each item
+            for i in range(len(self.items)):
+                ### CONDUCTS OPERATION ###
+                old:int = self.items[i]
+                op = self.operation.split(' ')
+                temp0, temp1, temp2, op, value = op
+                match(value):
+                    case('old'):
+                        value = old
+                    case _:
+                        value = int(value)
+
+                del temp0, temp1, temp2
+            
+                new = 0
+                match (op):
+                    case('+'):
+                        new = old + value
+                    case('-'):
+                        new = old - value
+                    case('*'):
+                        new = old * value
+                    case('/'):
+                        new = old / value
+                
+                # Operation (Inspection) over, time to be relieved
+                new = new // 3
+
+                # test, all operations are divisible by which is why we can take this shortcut
+                divisor:int = int(self.test.split(" by ")[1])
+                
+                # throw to operation just accesses and appends the value of new to the end of the other monkey
+                if new % divisor == 0:
+                    monkey_list[int(self.test_results[0].split(' ')[-1])].items.append(new)
+                else:
+                    monkey_list[int(self.test_results[1].split(' ')[-1])].items.append(new)
+            
+            # assumes monkey can't throw to self
+            self.items.clear()
 
     def count_indents(string:str) -> int:
         """
@@ -113,7 +163,7 @@ def soln_1():
     
     # makes the monkeys into dictionarys
     build_monkeys_dict(monkeys_text, monkeys)
-    print(monkeys)
+    # print(monkeys)
 
     # objectify monkeys
     monkey_list:list = list()
@@ -121,7 +171,14 @@ def soln_1():
         attribute = attribute['sub_desc']
         monkey_list.append(Monkey(name, [int(item) for item in attribute['Starting items'].split(", ")], attribute['Operation'], attribute['Test']['desc'], tuple(attribute['Test']['sub_desc'].values())))
     
-    for monkey in monkey_list:
-        print(monkey)
+    for i in range(20):
+        for monkey in monkey_list:
+            monkey.monkey_business(monkey_list)
 
+    monkey_activity:list = [monkey.inspections for monkey in monkey_list]
+    monkey_activity.sort()
+    monkey_business = monkey_activity[-2] * monkey_activity[-1]
+    
+    print(monkey_business)
+    copy_ans(monkey_business)
 soln_1()
