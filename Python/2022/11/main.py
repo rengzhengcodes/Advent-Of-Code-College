@@ -224,9 +224,10 @@ def soln_2():
             Runs the monkey
             """
             # updates inspections, but before they're run as the # of inspections is predictable
-            self.inspections += len(self.items)
+            inspections = len(self.items)
+            self.inspections += inspections
             # goes through each item
-            for i in range(len(self.items)):
+            for i in range(inspections):
                 ### CONDUCTS OPERATION ###
                 old:int = self.items[i]
                 match(self.operation[-1]):
@@ -246,14 +247,12 @@ def soln_2():
                     case('/'):
                         new = old / value
                 
-                # Operation (Inspection) over, time to be relieved
-                new = new // 3
-                
                 # throw to operation just accesses and appends the value of new to the end of the other monkey
+                # all the monkeys check by primes, so we can use chinese remainder theorem to keep stress manageable
                 if new % self.test == 0:
-                    monkey_list[self.test_results[0]].items.append(new)
+                    monkey_list[self.test_results[0]].items.append(new % 9699690)
                 else:
-                    monkey_list[self.test_results[1]].items.append(new)
+                    monkey_list[self.test_results[1]].items.append(new % 9699690)
             
             # assumes monkey can't throw to self
             self.items.clear()
@@ -327,7 +326,7 @@ def soln_2():
         attribute = attribute['sub_desc']
         monkey_list.append(Monkey(name, [int(item) for item in attribute['Starting items'].split(", ")], attribute['Operation'], attribute['Test']['desc'], tuple(attribute['Test']['sub_desc'].values())))
     
-    for i in range(20):
+    for i in range(10000):
         for monkey in monkey_list:
             monkey.monkey_business(monkey_list)
 
