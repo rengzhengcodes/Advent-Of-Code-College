@@ -55,12 +55,11 @@ def soln_1():
     terrain[(location_start[0], location_start[1])] = ord('a') - 97
 
     # set of orthogonal directions representing movement options
-    directions = set(
+    directions = (
         np.array((0, 1)),
         np.array((0, -1)),
         np.array((1, 0)),
-        np.array((-1, 0))
-    )
+        np.array((-1, 0)))
 
     # Runs cellular automata to find the steps needed to reach the end
     cells:np.ndarray = np.zeros(terrain.shape, dtype=int)
@@ -113,7 +112,7 @@ def soln_1():
     print(steps)
     copy_ans(steps)
 
-# soln_1()
+soln_1()
 
 def soln_2():
     # parses input
@@ -204,4 +203,4 @@ def soln_2():
     print(steps)
     copy_ans(steps)
 
-soln_2()
+# soln_2()
