@@ -151,9 +151,12 @@ def soln_2():
     # cells to negative as you can't take negative steps
     cells -= np.ones(terrain.shape, dtype = int)
     
-    # seeds the cell
+    ## seeds the cell
+    # iterates over rows
     for i in range(terrain.shape[0]):
+        # iterates over cols
         for j in range(terrain.shape[1]):
+            # only seeds terrain = 'a'
             if terrain[(i, j)] == 0:
                 cells[(i, j)] = 0
 
@@ -170,9 +173,14 @@ def soln_2():
                 # runs only if a virtual step has reached here
                 locale = np.array((i, j))
 
+                # only checks greatest values, not calculated
                 if cells[tuple(locale)] == (step - 1):
+                    # could use steps - 1, still think it's less hard on the CPU to store
                     cell_val = cells[tuple(locale)]
+
+                    # goes in all possible movement directions
                     for direction in directions:
+                        # gets the location of the tile movement
                         new_tile_locale = np.add(locale, direction)
 
                         # prevents wrap around or out of index
@@ -180,12 +188,15 @@ def soln_2():
                             continue
                         elif new_tile_locale[1] < 0 or new_tile_locale[1] >= terrain.shape[1]:
                             continue
-
+                        
+                        # for readability
                         new_tile_steps_val = cells[tuple(new_tile_locale)]
                         
                         # checks we are going up at most 1
                         if (terrain[tuple(new_tile_locale)] - terrain[tuple(locale)]) <= 1:
                             # checks we're only overwriting more steps or unstepped locales
+                            # second or i think is still uneccessary as you're either overwriting the same value or a lower one, the latter which is covered by first check 
+                            # still there for safety
                             if new_tile_steps_val < 0 or new_tile_steps_val > cell_val:
                                 cells[tuple(new_tile_locale)] = step
 
