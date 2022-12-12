@@ -35,5 +35,74 @@ def soln_1():
     with open("input.txt", 'r') as file:
         # raw file
         raw:str = file.read().rstrip()
+        # turns it into a list of list of chars
+        raw:list[list[str]] = [list(string) for string in raw.split('\n')]
+        # turns it into elevation map by turning to ascii then 0-indexing to a
+        raw = [[ord(char) - 97 for char in row] for row in raw]
+        terrain:np.ndarray = np.array(raw)
+
+    # finds E in map
+    E_val:int = ord('E') - 97
+    location_end:tuple = tuple(np.where(terrain == E_val))
+    # sets end to z level
+    terrain[(location_end[0], location_end[1])] = ord('z') - 97
+
+    # finds S in map
+    S_val:int = ord('S') - 97
+    location_start:tuple = tuple(np.where(terrain == S_val))
+    # sets start to a level
+    terrain[(location_start[0], location_start[1])] = ord('a') - 97
+
+    # set of orthogonal directions representing movement options
+    directions = (
+        np.array((0, 1)),
+        np.array((0, -1)),
+        np.array((1, 0)),
+        np.array((-1, 0))
+    )
+
+    # Runs cellular automata to find the steps needed to reach the end
+    cells:np.ndarray = np.zeros(terrain.shape, dtype=int)
+    # cells to negative as you can't take negative steps
+    cells -= np.ones(terrain.shape, dtype = int)
+    
+    # seeds the cell
+    cells[location_start] = 0
+
+    # runs the cellular automata simulation
+    # if no cell has reached the end yet, continue
+    step = 0
+    while (cells[location_end] < 0):
+        # optimization to ensure you only grab head value to not repeat calculations
+        step += 1
+        # iterates over rows
+        for i in range(len(cells)):
+            # iterates over cols
+            for j in range(len(cells[0])):
+                # runs only if a virtual step has reached here
+                locale = np.array((i, j))
+
+                if cells[tuple(locale)] == (step - 1):
+                    cell_val = cells[tuple(locale)]
+                    for direction in directions:
+                        new_tile_locale = np.add(locale, direction)
+
+                        # prevents wrap around or out of index
+                        if new_tile_locale[0] < 0 or new_tile_locale[0] >= terrain.shape[0]:
+                            continue
+                        elif new_tile_locale[1] < 0 or new_tile_locale[1] >= terrain.shape[1]:
+                            continue
+
+                        new_tile_steps_val = cells[tuple(new_tile_locale)]
+                        
+                        # checks we are going up at most 1
+                        if (terrain[tuple(new_tile_locale)] - terrain[tuple(locale)]) <= 1:
+                            # checks we're only overwriting more steps or unstepped locales
+                            if new_tile_steps_val < 0 or new_tile_steps_val > cell_val:
+                                cells[tuple(new_tile_locale)] = cell_val + 1
+
+    steps:int = int(cells[location_end][0])
+    print(steps)
+    copy_ans(steps)
 
 soln_1()
