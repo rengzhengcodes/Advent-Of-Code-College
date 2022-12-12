@@ -112,7 +112,7 @@ def soln_1():
     print(steps)
     copy_ans(steps)
 
-soln_1()
+# soln_1()
 
 def soln_2():
     # parses input
@@ -203,4 +203,4 @@ def soln_2():
     print(steps)
     copy_ans(steps)
 
-# soln_2()
+soln_2()
