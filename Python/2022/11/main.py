@@ -195,6 +195,8 @@ def soln_2():
     
     # class for each monkey
     class Monkey():
+        # CRT = Chinese Remainder Theorem number for keeping worry manageable
+        crt:int = 1
         def __init__(self, name:str, starting_items:list, operation:str, test:str, test_results:tuple):
             # name of the monkey
             self.name:str = name
@@ -204,8 +206,9 @@ def soln_2():
             self.operation:tuple = tuple(operation.split(' '))
             # test the monkey does to determine its actions
             self.test:str = int(test.split(" by ")[1])
+            # updates CRT monkey with test value for modulus purposes
+            Monkey.crt *= self.test
             # what the monkey does after it does its test
-            print(test_results)
             self.test_results:tuple = tuple([int(test_result.split(' ')[-1]) for test_result in test_results])
             # amount of inspections conducted
             self.inspections = 0
@@ -250,9 +253,9 @@ def soln_2():
                 # throw to operation just accesses and appends the value of new to the end of the other monkey
                 # all the monkeys check by primes, so we can use chinese remainder theorem to keep stress manageable
                 if new % self.test == 0:
-                    monkey_list[self.test_results[0]].items.append(new % 9699690)
+                    monkey_list[self.test_results[0]].items.append(new % Monkey.crt)
                 else:
-                    monkey_list[self.test_results[1]].items.append(new % 9699690)
+                    monkey_list[self.test_results[1]].items.append(new % Monkey.crt)
             
             # assumes monkey can't throw to self
             self.items.clear()
@@ -326,6 +329,10 @@ def soln_2():
         attribute = attribute['sub_desc']
         monkey_list.append(Monkey(name, [int(item) for item in attribute['Starting items'].split(", ")], attribute['Operation'], attribute['Test']['desc'], tuple(attribute['Test']['sub_desc'].values())))
     
+    # calculates the modulus number to keep worry manageable
+    Monkey
+
+
     for i in range(10000):
         for monkey in monkey_list:
             monkey.monkey_business(monkey_list)
