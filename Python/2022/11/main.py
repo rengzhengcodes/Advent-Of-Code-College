@@ -65,18 +65,26 @@ def soln_1():
             # goes through each item
             for i in range(len(self.items)):
                 ### CONDUCTS OPERATION ###
+                # gets old worry value
                 old:int = self.items[i]
+                # gets the operation happening to the worry value, plus the value we're operating with in the operatoin
                 op = self.operation.split(' ')
+                
+                # temp0-2 are just values that never change across operations and so we can throw them out
                 temp0, temp1, temp2, op, value = op
+                # explicitly frees memory allocated to temps
+                del temp0, temp1, temp2
+
+                # parses literal value, or sets the value of operation to old if it specifies old.
                 match(value):
                     case('old'):
                         value = old
                     case _:
                         value = int(value)
 
-                del temp0, temp1, temp2
-            
+                # new worry value
                 new = 0
+                # parses operation, uses old and value to calculate the new worry value
                 match (op):
                     case('+'):
                         new = old + value
@@ -141,11 +149,16 @@ def soln_1():
                 current_level[line[0]] = dict()
                 # fills out indentation block dictionary, sets index to where the last operation left off
                 index = build_monkeys_dict(string_list, current_level[line[0]], index=index + 1, indentation_level=indentation)
+            
+            # indentation detection
             elif indentation > indentation_level:
-                # previous line was actually a nested descriptor
+                # previous line was actually a nested descriptor, replace with a dictionary mapping the attribute to its inline descriptor and nested sub descriptor.
                 prev_line:str = string_list[index - 1]
+                # parses the previous line as we did this line (and that line last time)
                 prev_line:tuple = tuple([part.rstrip().strip() for part in prev_line.split(':')])
+                # subdescriptor dictionary
                 sub_desc = dict()
+                # redefines previous attribute to the new dictionary structure for inline and indent attributes
                 current_level[prev_line[0]] = {
                     'desc': prev_line[1],
                     'sub_desc': sub_desc
@@ -153,6 +166,7 @@ def soln_1():
                 # builds sub_desc
                 index = build_monkeys_dict(string_list, sub_desc, index=index, indentation_level=indentation)
             else:
+                # builds inline descriptors
                 current_level[line[0]] = line[1]
                 index += 1
         
@@ -163,18 +177,19 @@ def soln_1():
     
     # makes the monkeys into dictionarys
     build_monkeys_dict(monkeys_text, monkeys)
-    # print(monkeys)
 
-    # objectify monkeys
+    # objectify monkeys based on monkey dictionary entry
     monkey_list:list = list()
     for name, attribute in monkeys.items():
         attribute = attribute['sub_desc']
         monkey_list.append(Monkey(name, [int(item) for item in attribute['Starting items'].split(", ")], attribute['Operation'], attribute['Test']['desc'], tuple(attribute['Test']['sub_desc'].values())))
     
+    # goes through all 20 rounds of monkey business
     for i in range(20):
         for monkey in monkey_list:
             monkey.monkey_business(monkey_list)
 
+    # pulls out the number of inspections each monkey did and sorts them to calculate monkey business occuring.
     monkey_activity:list = [monkey.inspections for monkey in monkey_list]
     monkey_activity.sort()
     monkey_business = monkey_activity[-2] * monkey_activity[-1]
