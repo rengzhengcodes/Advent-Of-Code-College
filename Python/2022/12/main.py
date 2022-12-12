@@ -39,6 +39,7 @@ def soln_1():
         raw:list[list[str]] = [list(string) for string in raw.split('\n')]
         # turns it into elevation map by turning to ascii then 0-indexing to a
         raw = [[ord(char) - 97 for char in row] for row in raw]
+        # converts raw to np.ndarray because numpy has built-in methods for locating
         terrain:np.ndarray = np.array(raw)
 
     # finds E in map
@@ -54,7 +55,7 @@ def soln_1():
     terrain[(location_start[0], location_start[1])] = ord('a') - 97
 
     # set of orthogonal directions representing movement options
-    directions = (
+    directions = set(
         np.array((0, 1)),
         np.array((0, -1)),
         np.array((1, 0)),
@@ -81,10 +82,15 @@ def soln_1():
             for j in range(len(cells[0])):
                 # runs only if a virtual step has reached here
                 locale = np.array((i, j))
-
+                
+                # runs only if it's the head (aka not calculated before)
                 if cells[tuple(locale)] == (step - 1):
+                    # could use steps - 1, but i think this is less expensive than that versus utilization
                     cell_val = cells[tuple(locale)]
+                    
+                    # heads in all directions
                     for direction in directions:
+                        # gets movement direction location
                         new_tile_locale = np.add(locale, direction)
 
                         # prevents wrap around or out of index
@@ -92,12 +98,14 @@ def soln_1():
                             continue
                         elif new_tile_locale[1] < 0 or new_tile_locale[1] >= terrain.shape[1]:
                             continue
-
+                        
+                        # for readability
                         new_tile_steps_val = cells[tuple(new_tile_locale)]
                         
                         # checks we are going up at most 1
                         if (terrain[tuple(new_tile_locale)] - terrain[tuple(locale)]) <= 1:
                             # checks we're only overwriting more steps or unstepped locales
+                            # second part of or unnecessary since we always go by biggest value, but there because im pretty sure python short circuits
                             if new_tile_steps_val < 0 or new_tile_steps_val > cell_val:
                                 cells[tuple(new_tile_locale)] = cell_val + 1
 
