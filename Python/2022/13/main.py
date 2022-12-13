@@ -138,4 +138,128 @@ def soln_1():
     print(index_sum)
     copy_ans(index_sum)
 
-soln_1()
+# soln_1()
+
+def soln_2():
+    # parses input
+    with open("input.txt", 'r') as file:
+        # raw file
+        raw:str = file.read().rstrip()
+        # replaces spaces, puts them all in 1 block
+        signals_raw:list[str] = raw.replace("\n\n", '\n')
+        # splits into signals list
+        signals:list = list(signals_raw.split('\n'))
+        # evaluates each signal
+        signals = [literal_eval(signal) for signal in signals]
+    
+    # Parse later
+    # def parse_input(input:str, holder:list) -> None:
+    #     """
+    #     Parses input. We can just use eval but it's more safe parsing.
+
+    #     input:str:
+    #         The input string we're parsing
+    #     holder:list:
+    #         The list we're mutating
+    #     """
+    #     # elements of the input list
+    #     elements:list[str] = in
+
+    #     for i in range(len(input)):
+    #         char = input[i]
+    #         match (char):
+    #            # inputs sublist
+    #             case '[':
+    #                 sub_list = list()
+    #                 holder.append(sub_list)
+    #                 parse_input(input)
+    #             # exits at list end
+    #             case ']':
+    #                 return
+    #             # basecase of int
+    #             case _:
+    #                 holder.append(int(char))
+
+    # appends distress signal packets
+    signals.append([[2]])
+    signals.append([[6]])
+
+    def solve(left:list, right:list) -> bool:
+        # blank checks
+        if left is None and right is not None:
+            return True
+        elif left is None and right is None:
+            return None
+        elif left is not None and right is None:
+            return False
+        
+        for i in range(len(left)):
+            # if right runs out first, it's not correct
+            if i >= len(right):
+                return False
+            
+            # both are ints case
+            if isinstance(left[i], int) and isinstance(right[i], int):
+                if left[i] < right[i]:
+                    return True
+                elif left[i] > right[i]:
+                    return False
+            # both are lists case
+            elif isinstance(left[i], list) and isinstance(right[i], list):
+                # if we reached a resolution it's in the correct order, return it, else continue
+                result = solve(left[i], right[i])
+                if result is not None:
+                    return result
+            
+            # one is a list
+            else:
+                # list int is put into, since we must typecast the int to a list
+                constructed_list:list = list()
+
+                # left is the int
+                if isinstance(left[i], int):
+                    constructed_list.append(left[i])
+                    result = solve(constructed_list, right[i])
+                # right is a list
+                else:
+                    constructed_list.append(right[i])
+                    result = solve(left[i], constructed_list)
+
+                # if we reach a conclusion, return it
+                if result is not None:
+                    return result
+        
+        # left ran out first it's true
+        if len(left) < len(right):
+            return True
+        # else, left must be equal, so inconclusive
+        else:
+            return None
+    
+    # sorts the signals + distress packets, bubblesort style
+    swapped = True
+    while swapped:
+        swapped = False
+        for i in range(len(signals) - 1):
+            if not solve(signals[i], signals[i+1]):
+                # swap the two
+                signals[i], signals[i + 1] = signals[i + 1], signals[i]
+                # continue swapping
+                swapped = True
+    
+    # finds dividers
+    dividers:list = list()
+
+    for i in range(len(signals)):
+        signal = signals[i]
+        # describes decoder
+        if signal == [[2]] or signal == [[6]]:
+            dividers.append(i + 1)
+    
+    # multiplies dividers
+    decoder_key:int = int(np.prod(dividers, dtype=int))
+
+    print(decoder_key)
+    copy_ans(decoder_key)
+
+soln_2()
