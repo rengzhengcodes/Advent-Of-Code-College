@@ -132,7 +132,6 @@ def soln_1():
     for left, right in signal_pairs:
         if solve(left, right):
             index_sum += index
-            print(index)
 
         index += 1
     
