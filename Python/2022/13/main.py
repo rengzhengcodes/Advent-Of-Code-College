@@ -45,45 +45,30 @@ def soln_1():
         # evaluates each
         signal_pairs = [(literal_eval(signal0), literal_eval(signal1)) for signal0, signal1 in signal_pairs]
     
-    # Parse later
-    # def parse_input(input:str, holder:list) -> None:
-    #     """
-    #     Parses input. We can just use eval but it's more safe parsing.
-
-    #     input:str:
-    #         The input string we're parsing
-    #     holder:list:
-    #         The list we're mutating
-    #     """
-    #     # elements of the input list
-    #     elements:list[str] = in
-
-    #     for i in range(len(input)):
-    #         char = input[i]
-    #         match (char):
-    #            # inputs sublist
-    #             case '[':
-    #                 sub_list = list()
-    #                 holder.append(sub_list)
-    #                 parse_input(input)
-    #             # exits at list end
-    #             case ']':
-    #                 return
-    #             # basecase of int
-    #             case _:
-    #                 holder.append(int(char))
-
     def solve(left:list, right:list) -> bool:
-        # blank checks
+        """
+        Determines whether or not left is in order relative to right
+
+        left:list
+            First signal in pair
+        right:list
+            Second signal in pair
+        """
+        
+        ## blank checks
+        # left length is 0, right > 0
         if left is None and right is not None:
             return True
+        # left and right length == 0
         elif left is None and right is None:
             return None
+        # left length > 0, right == 0
         elif left is not None and right is None:
             return False
         
+        # goes through all elements of signal
         for i in range(len(left)):
-            # if right runs out first, it's not correct
+            # if right runs out of elements first, it's not correct
             if i >= len(right):
                 return False
             
@@ -151,50 +136,35 @@ def soln_2():
         signals:list = list(signals_raw.split('\n'))
         # evaluates each signal
         signals = [literal_eval(signal) for signal in signals]
-    
-    # Parse later
-    # def parse_input(input:str, holder:list) -> None:
-    #     """
-    #     Parses input. We can just use eval but it's more safe parsing.
-
-    #     input:str:
-    #         The input string we're parsing
-    #     holder:list:
-    #         The list we're mutating
-    #     """
-    #     # elements of the input list
-    #     elements:list[str] = in
-
-    #     for i in range(len(input)):
-    #         char = input[i]
-    #         match (char):
-    #            # inputs sublist
-    #             case '[':
-    #                 sub_list = list()
-    #                 holder.append(sub_list)
-    #                 parse_input(input)
-    #             # exits at list end
-    #             case ']':
-    #                 return
-    #             # basecase of int
-    #             case _:
-    #                 holder.append(int(char))
 
     # appends distress signal packets
     signals.append([[2]])
     signals.append([[6]])
-
+    
     def solve(left:list, right:list) -> bool:
-        # blank checks
+        """
+        Determines whether or not left is in order relative to right
+
+        left:list
+            First signal in pair
+        right:list
+            Second signal in pair
+        """
+        
+        ## blank checks
+        # left length is 0, right > 0
         if left is None and right is not None:
             return True
+        # left and right length == 0
         elif left is None and right is None:
             return None
+        # left length > 0, right == 0
         elif left is not None and right is None:
             return False
         
+        # goes through all elements of signal
         for i in range(len(left)):
-            # if right runs out first, it's not correct
+            # if right runs out of elements first, it's not correct
             if i >= len(right):
                 return False
             
@@ -235,7 +205,7 @@ def soln_2():
         # else, left must be equal, so inconclusive
         else:
             return None
-    
+   
     # sorts the signals + distress packets, bubblesort style
     swapped = True
     while swapped:
