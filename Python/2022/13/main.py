@@ -1,3 +1,15 @@
+"""
+NOTICE:
+
+The solve function for part 2 works, but assumes all inputs are unique. 
+You simply have to add a check to see that the solve function does not return 
+None so it doesn't keep swapping two identical values. This is easily done, but
+was neglected for speedcoding + code speed running purposes. It was not inserted
+later as the input does not require it and I currently cannot do the proper tests
+myself in case my implementation is somehow messy. 
+"""
+
+
 import sys
 sys.path.append("../../")
 from advent_io import *
