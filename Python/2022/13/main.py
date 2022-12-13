@@ -28,6 +28,9 @@ from operator import add
 # imports dedent to removes indent from multiline strings
 from textwrap import dedent
 
+# imports eval that is safe
+from ast import literal_eval
+
 fetch_input(13, 2022)
 
 def soln_1():
@@ -40,7 +43,7 @@ def soln_1():
         # splits into signal pairs in list
         signal_pairs:list = [list(signal_pair.split('\n')) for signal_pair in signal_pairs_raw]
         # evaluates each
-        signal_pairs = [(eval(signal0), eval(signal1)) for signal0, signal1 in signal_pairs]
+        signal_pairs = [(literal_eval(signal0), literal_eval(signal1)) for signal0, signal1 in signal_pairs]
     
     # Parse later
     # def parse_input(input:str, holder:list) -> None:
@@ -83,23 +86,33 @@ def soln_1():
             # if right runs out first, it's not correct
             if i >= len(right):
                 return False
+            
             # both are ints case
-            elif isinstance(left[i], int) and isinstance(right[i], int):
-                return True
+            if isinstance(left[i], int) and isinstance(right[i], int):
+                if left[i] < right[i]:
+                    return True
+                elif left[i] > right[i]:
+                    return False
             # both are lists case
             elif isinstance(left[i], list) and isinstance(right[i], list):
                 # if we reached a resolution it's in the correct order, return it, else continue
                 result = solve(left[i], right[i])
                 if result is not None:
                     return result
+            
             # one is a list
             else:
+                # list int is put into, since we must typecast the int to a list
+                constructed_list:list = list()
+
                 # left is the int
                 if isinstance(left[i], int):
-                    result = solve(list().append(left[i]), right[i])
+                    constructed_list.append(left[i])
+                    result = solve(constructed_list, right[i])
                 # right is a list
                 else:
-                    result = solve(left[i], list().append(right[i]))
+                    constructed_list.append(right[i])
+                    result = solve(left[i], constructed_list)
 
                 # if we reach a conclusion, return it
                 if result is not None:
@@ -113,12 +126,17 @@ def soln_1():
             return None
     
     # correct pair count
-    correct_pairs:int = 0
+    index_sum:int = 0
+    # 1 indexed
+    index:int = 1
     for left, right in signal_pairs:
         if solve(left, right):
-            correct_pairs += 1
+            index_sum += index
+            print(index)
 
-    print(correct_pairs)
-    copy_ans(correct_pairs)
+        index += 1
+    
+    print(index_sum)
+    copy_ans(index_sum)
 
 soln_1()
