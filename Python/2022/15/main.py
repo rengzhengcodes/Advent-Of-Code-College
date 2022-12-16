@@ -39,9 +39,11 @@ def soln_1():
         # raw file
         raw:str = file.read().rstrip()
         raw = raw.split('\n')
+
         # splits to sensor, beacon pairs
         pairs:list = [list(line.split(": ")) for line in raw]
         pairs = [[sensor.split(" at ")[1].split(", "), beacon.split(" at ")[1].split(", ")] for sensor, beacon in pairs]
+
         # extracts sensor and beacon into integer base pairs
         pairs = [
                     (
@@ -74,43 +76,57 @@ def soln_1():
     
     # corresponds sensor to its maximum distance given nearest beacon
     sensor_max_dist:dict = dict()
+
+    # finds maximum manhattan distance the sensor senses
     for sensor, beacon in pairs:
         # notes distance from each sensor to closest beacon
         sensor_max_dist[sensor] = calc_manhattan_dist(sensor, beacon)
     
+    # y-value we want to find sensor scans for
     y = 2000000
+
     # calculates number of no beacons in y=2000000
     no_beacons:int = 0
     for x in range(x_bounds[0], x_bounds[1] + 1):
-        empty:bool = True
+        # tracks if beacon can be here
+        possible:bool = True
+        # current location we are checking for beacon possibility
         current_location:tuple = (x, y)
 
+        # checks location to see if any sensor looked here
         for sensor, max_dist in sensor_max_dist.items():
             if calc_manhattan_dist(sensor, current_location) <= max_dist:
-                empty = False
+                possible = False
                 break
         
-        if not empty:
+        # increments no beacon if a sensor checked this area and found no beacon
+        if not possible:
             no_beacons += 1
     
     """
     # counts the area before the x_bound. 
     # The x_bound represents the entity object limit, 
     # so with the way things are set up we only need to
-    # calculate past the bounds so long as no beacon can be there
+    # calculate past the bounds until we reach the first possible beacon spot
+    # No beacon spots are convex in bound shape which is why we can do this.
     """
     # if it's possible for a beacon to be there
     possible:bool = False
 
     x = x_bounds[0] - 1
     while(not possible):
+        # tracks if beacon can be here
         possible = True
+        # current location we are checking for beacon possibility
         current_location:tuple = (x, y)
+
+        # checks location to see if any sensor looked here
         for sensor, max_dist in sensor_max_dist.items():
             if calc_manhattan_dist(sensor, current_location) <= max_dist:
                 possible = False
                 break
         
+        # increments no beacon and shifts one unit left to check again if not possible in row still
         if not possible:
             no_beacons += 1
             x -= 1
@@ -123,20 +139,26 @@ def soln_1():
 
     x = x_bounds[1] + 1
     while(not possible):
+        # tracks if beacon can be here
         possible = True
+        # current location we are checking for beacon possibility
         current_location:tuple = (x, y)
+
+        # checks location to see if any sensor is there
         for sensor, max_dist in sensor_max_dist.items():
             if calc_manhattan_dist(sensor, current_location) <= max_dist:
                 possible = False
                 break
         
+        # increments no beacon and shifts one unit right to check again if not possible in row still
         if not possible:
             no_beacons += 1
             x += 1
 
-    # removes beacons from full
+    # prevents double counting, as some sensors lock onto the same beacon
     counted_beacons = set()
-    for signal, beacon in pairs:
+    # removes beacons in sensor range that we counted, because there is, in fact, a beacon there.
+    for sensor, beacon in pairs:
         if beacon not in counted_beacons and beacon[1] == y:
             counted_beacons.add(beacon)
             no_beacons -= 1
@@ -144,7 +166,7 @@ def soln_1():
     print(no_beacons)
     copy_ans(no_beacons)
 
-# soln_1()
+soln_1()
 
 def soln_2():
     """
@@ -195,19 +217,32 @@ def soln_2():
     
     print("Max distances calculated")
     
+    # the beacon we're looking for
+    beacon:tuple = (0, 0)
+
     # finds all points just out of sensor range
     sensor_bounds:set = set()
     for sensor, dist in sensor_max_dist.items():
+        # current sensor bound
+        sensor_bound:set = set()
+        
+        # current x and y_offset from sensor
         x_off = 0
         y_off = dist + 1
+        
+        # sensor position as np.ndarray
         sensor = np.array(sensor)
+        # point as np.ndarray()
         point = np.array((x_off, y_off)) + sensor
+
+        # while loop is nice as it does two things, it detects if we've gone a full circle around OR if we've found the solution
         while (tuple(point) not in sensor_bounds):
             # only adds points in bound
+            sensor_bound.add(point)
             if x_bounds[0] <= point[0] <= x_bounds[1] and y_bounds[0] <= point[1] <= y_bounds[1]:
                 sensor_bounds.add(tuple(point))
     
-            if y_off > 0:
+            if y_off > 0 and not (x_off < 0):
                 x_off += 1
                 y_off -= 1
             elif x_off > 0:
