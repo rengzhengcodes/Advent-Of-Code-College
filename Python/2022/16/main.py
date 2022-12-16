@@ -231,18 +231,15 @@ def soln_2():
          
         del valves_unmasked
 
-    # our own dp implementation
-    dp:dict = dict()
+    @cache
     def calc_flow_possible(
-                        you:np.uint16, opened:np.uint16, time_left:np.uint8 = 30
+                        you_elephant:np.uint32, opened:np.uint16, time_left:np.uint8 = 30
         ) -> int:
         """
         Calculates all the flow possible given a starting point     
-        you:np.uint16
-            The position of you
-        
-        elephant:np.uint16
-            The position of the elephant
+        you_elephant:np.uint32
+            Position of you and the elephant
+            You always is <= elephant when evaluated
 
         opened:np.uint16
             The opened valves, as bitmask
@@ -255,24 +252,35 @@ def soln_2():
         """
         # if time's up, return 0, no gain
         if time_left == 0:
-            del you, opened, time_left
+            del you_elephant, opened, time_left
             return 0
-        elif (you, opened, time_left) in dp:
-            return dp[((you, opened, time_left))]
+        # if all opened, return 0
+        elif opened ^ 0xFFFE == 0:
+            return 0
         
+        # gets you and elephant
+        you = np.uint32(you_elephant & 0xFFFF0000) >> 16
+        elephant = (you_elephant & 0x0000FFFF)
+        print(hex(you_elephant), hex(you), hex(elephant))
+
         ### branching options ###
         
         # max gain branch so far
         max:int = 0
         
-        # if you can open, open
-        if not (you & opened) and you % 2 == 0:
-            new_opened = opened | you
+        # if you and elephant can open, open
+        if (
+            you != elephant and 
+            you & 0b1 == 0 and you & opened == 0 and
+            you & 0b1 == 0 and elephant & opened == 0
+        ):
+            new_opened = opened | you | elephant
         
             branch_val:int = (
                 valves[you]['flow'] * (time_left - 1) +
+                valves[elephant]['flow'] * (time_left - 1) +
                 calc_flow_possible(
-                    you, new_opened, time_left - 1
+                    you_elephant, new_opened, time_left - 1
                 )
             )
 
@@ -281,26 +289,64 @@ def soln_2():
 
             del new_opened
             del branch_val
+        
+        # if you can open, open
+        if (
+            you & 0b1 == 0 and you & opened == 0
+        ):
+            new_opened = opened | you
 
-        # you move
-        for you_move in valves[you]['leads']:
-            branch_val:int = (
-                calc_flow_possible(
-                    you_move, opened, time_left - 1
+            # move elephant
+            for elephant_move in valves[elephant]['leads']:
+                you_temp = you
+                if you > elephant_move:
+                    elephant_move, you_temp = you_temp, elephant_move
+                
+                branch_val:int = (
+                    valves[you]['flow'] * (time_left - 1) +
+                    calc_flow_possible(
+                        (you_temp << 16) | elephant_move, new_opened, time_left - 1
+                    )
                 )
-            )
+        
+        # if elephant can open, open
+        if (
+            elephant & 0b1 == 0 and elephant & opened == 0
+        ):
+            new_opened = opened | elephant
+
+            # move you
+            for you_move in valves[you]['leads']:
+                elephant_temp = elephant
+                if you_move > elephant:
+                    elephant_temp, you_move = you_move, elephant_temp
+                
+                branch_val:int = (
+                    valves[elephant]['flow'] * (time_left - 1) +
+                    calc_flow_possible(
+                        (you_move << 16) | elephant_temp, new_opened, time_left - 1
+                    )
+                )
+
+        # both move
+        for you_move in valves[you]['leads']:
+            for elephant_move in valves[elephant]['leads']:
+                if you_move > elephant_move:
+                    elephant_move, you_move = you_move, elephant_move
+                branch_val:int = (
+                    calc_flow_possible(
+                        (you_move << 16) | elephant_move, opened, time_left - 1
+                    )
+                )
 
             if branch_val > max:
                 max = branch_val
         
-        dp[(you, opened, time_left)] = max
         return max
     
     # just to generate DP
-    calc_flow_possible(translation['AA'], 0, 26)
-
-    valid_paths = [(max, opened) for (you, opened, time_left), max in dp.items()  if time_left == 25]
-
-    print(valid_paths)
+    maximum_flow = calc_flow_possible((translation['AA'] << 16) | translation['AA'], 0, 26)
+    print(maximum_flow)
+    copy_ans(maximum_flow)
 
 soln_2()
