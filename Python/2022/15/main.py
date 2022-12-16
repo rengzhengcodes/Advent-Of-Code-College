@@ -238,7 +238,7 @@ def soln_2():
         # while loop is nice as it does two things, it detects if we've gone a full circle around OR if we've found the solution
         while (tuple(point) not in sensor_bounds):
             # only adds points in bound
-            sensor_bound.add(point)
+            sensor_bound.add(tuple(point))
             if x_bounds[0] <= point[0] <= x_bounds[1] and y_bounds[0] <= point[1] <= y_bounds[1]:
                 sensor_bounds.add(tuple(point))
     
