@@ -32,7 +32,7 @@ from textwrap import dedent
 from ast import literal_eval
 
 # imports caching function for recursion
-from functools import cache
+from functools import cache, lru_cache
 
 # imports deepcopy function
 from copy import deepcopy
@@ -68,7 +68,7 @@ def soln_1():
         def calc_flow_possible(
                             start:str, opened:tuple, 
                             time_left:int = 30, valves:dict=valves
-            ) -> list:
+            ) -> int:
             """
             Calculates all the flow possible given a starting point
             start: str
@@ -138,4 +138,184 @@ def soln_1():
         print(maximum_flow)
         copy_ans(maximum_flow)
 
-soln_1()
+# soln_1()
+
+def soln_2():
+    # parses input
+    with open("example.txt", 'r') as file:
+        # raw file
+        raw:str = file.read().rstrip()
+        # singlizes so it works with parser
+        raw = raw.replace("valves", "valve")
+        # splits among newlines
+        raw = raw.split('\n')
+        
+        # breaks up into valves and leads
+        valves_raw:list = [line.split("; ") for line in raw]
+        del raw
+        # breaks valves into leads and tuples
+        valves_unmasked:dict = dict()
+
+        # creates objects of valves
+        for valve, leads in valves_raw:
+            leads = tuple(leads.split("valve ")[1].split(", "))
+            flow_rate = int(valve.split('=')[1])
+            valve = valve.split(" has")[0].split("Valve ")[1]
+            valves_unmasked[valve] = {
+                'flow': flow_rate,
+                'leads': leads
+            }
+        
+        del valves_raw
+        # we have 56 valves
+        # 14 of them have nonzero flow
+        # we can represent those 14 with LSB 0
+        # we can represent the rest with LSB 1
+        curr_nonzero_rep:np.uint16 = 2
+        curr_zero_rep:np.uint16 = 1
+
+        # all valves
+        all_valves = [valve for valve, item in valves_unmasked.items()]
+
+        # the translation book
+        translation:dict = dict()
+        for valve in all_valves:
+            if valves_unmasked[valve]['flow'] == 0:
+                translation[valve] = curr_zero_rep
+                curr_zero_rep += 2
+            else:
+                translation[valve] = curr_nonzero_rep
+                curr_nonzero_rep = curr_nonzero_rep << 1
+        
+        del all_valves
+        del curr_nonzero_rep
+        del curr_zero_rep
+
+        # actual valves
+        valves:dict = dict()
+        # translate to bitmask
+        for valve, item in valves_unmasked.items():
+            valves[translation[valve]] = {
+                'flow': item['flow'],
+                'leads': tuple([translation[lead] for lead in item['leads']])
+            }
+         
+        del valves_unmasked
+
+    @lru_cache(maxsize=None)
+    def calc_flow_possible(
+                        you:np.uint16, elephant:np.uint16, opened:np.uint16, time_left:np.uint8 = 30
+        ) -> int:
+        """
+        Calculates all the flow possible given a starting point     
+        you:np.uint16
+            The position of you
+        
+        elephant:np.uint16
+            The position of the elephant
+
+        opened:np.uint16
+            The opened valves, as bitmask
+        
+        time_left: int
+            Amount of time left
+        
+        Returns:
+            Maximum possible flow from state
+        """
+        # if time's up, return 0, no gain
+        if time_left == 0:
+            del you, elephant, opened, time_left
+            return 0
+        
+        ### branching options ###
+        
+        # max gain branch so far
+        max:int = 0
+        
+        # if you and elephant can open, both open, if not on same valve
+        if (
+            you != elephant and (not (you & opened) and you % 2 == 0) and (not (elephant & opened) and elephant % 2 == 0)
+        ):
+            new_opened = opened | you | elephant
+
+            branch_val:int = (
+                valves[you]['flow'] * (time_left - 1) +
+                valves[elephant]['flow'] * (time_left - 1) +
+                calc_flow_possible(
+                    you, elephant, new_opened, time_left - 1
+                )
+            )
+
+            if branch_val > max:
+                max = branch_val
+            
+            del branch_val
+            del new_opened
+        
+        # if you can open, open, and elephant moves
+        if not (you & opened) and you % 2 == 0:
+            new_opened = opened | you
+            
+            for elephant_move in valves[elephant]['leads']:
+                branch_val:int = (
+                    valves[you]['flow'] * (time_left - 1) +
+                    calc_flow_possible(
+                        you, elephant_move, new_opened, time_left - 1
+                    )
+                )
+
+                if branch_val > max:
+                    max = branch_val
+
+            del new_opened
+            del branch_val
+
+        # if elephant can open, open, and you move
+        if not (elephant & opened) and elephant % 2 == 0:
+            new_opened = opened | elephant
+
+            for you_move in valves[you]['leads']:
+                branch_val:int = (
+                    valves[elephant]['flow'] * (time_left - 1) +
+                    calc_flow_possible(
+                        you_move, elephant, new_opened, time_left - 1
+                    )
+                )
+
+                if branch_val > max:
+                    max = branch_val
+            
+            del branch_val
+            del new_opened
+        
+        # both move
+        for you_move in valves[you]['leads']:
+            for elephant_move in valves[elephant]['leads']:
+                branch_val:int = (
+                    calc_flow_possible(
+                        you_move, elephant_move, opened, time_left - 1
+                    )
+                )
+
+                if branch_val > max:
+                    max = branch_val
+                
+                del branch_val
+    
+        del you, elephant, opened, time_left
+        return max
+
+    # all the ones with flow 0 you should not open
+    opened:set = set()
+    for valve, info in valves.items():
+        flow, leads = info.values()
+        if flow == 0:
+            opened.add(valve)
+    
+    print(opened)
+    maximum_flow = calc_flow_possible(translation['AA'], translation['AA'], time_left = 26, opened=0)
+    print(maximum_flow)
+    copy_ans(maximum_flow)
+
+soln_2()
