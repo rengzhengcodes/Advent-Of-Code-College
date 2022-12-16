@@ -254,14 +254,10 @@ def soln_2():
         if time_left == 0:
             del you_elephant, opened, time_left
             return 0
-        # if all opened, return 0
-        elif opened ^ 0xFFFE == 0:
-            return 0
         
         # gets you and elephant
         you = np.uint32(you_elephant & 0xFFFF0000) >> 16
         elephant = (you_elephant & 0x0000FFFF)
-        print(hex(you_elephant), hex(you), hex(elephant))
 
         ### branching options ###
         
@@ -272,7 +268,7 @@ def soln_2():
         if (
             you != elephant and 
             you & 0b1 == 0 and you & opened == 0 and
-            you & 0b1 == 0 and elephant & opened == 0
+            elephant & 0b1 == 0 and elephant & opened == 0
         ):
             new_opened = opened | you | elephant
         
@@ -309,6 +305,12 @@ def soln_2():
                     )
                 )
         
+            if branch_val > max:
+                max = branch_val
+
+            del new_opened
+            del branch_val
+        
         # if elephant can open, open
         if (
             elephant & 0b1 == 0 and elephant & opened == 0
@@ -328,6 +330,12 @@ def soln_2():
                     )
                 )
 
+            if branch_val > max:
+                max = branch_val
+
+            del new_opened
+            del branch_val
+        
         # both move
         for you_move in valves[you]['leads']:
             for elephant_move in valves[elephant]['leads']:
