@@ -34,6 +34,9 @@ from ast import literal_eval
 # imports caching function for recursion
 from functools import cache, lru_cache
 
+# imports itertools
+import itertools as it
+
 # imports deepcopy function
 from copy import deepcopy
 
@@ -196,11 +199,11 @@ def soln_2():
             }
         
         del valves_raw
-        # we have 56 valves
-        # 14 of them have nonzero flow
-        # we can represent those 14 with LSB 0
+        # we have 55 valves
+        # 15 of them have nonzero flow
+        # we can represent those 15 with LSB 0
         # we can represent the rest with LSB 1
-        curr_nonzero_rep:np.uint16 = 2
+        curr_nonzero_rep:np.uint16 = 0b10
         curr_zero_rep:np.uint16 = 1
         # int where all the valves are opened
         all_opened_rep:np.uint16 = 0
@@ -216,7 +219,7 @@ def soln_2():
                 curr_zero_rep += 2
             else:
                 translation[valve] = curr_nonzero_rep
-                all_opened_rep = all_opened_rep | curr_nonzero_rep
+                all_opened_rep |= curr_nonzero_rep
                 curr_nonzero_rep = curr_nonzero_rep << 1
         
         del all_valves
@@ -235,14 +238,16 @@ def soln_2():
         del valves_unmasked
 
     @cache
-    def calc_flow_possible(
-                        you_elephant:np.uint32, opened:np.uint16, time_left:np.uint8 = 30
-        ) -> int:
+    def calc_all_possible_outcomes(
+                        you:np.uint16, opened:np.uint16, time_left:np.uint8 = 30
+        ) -> set:
         """
         Calculates all the flow possible given a starting point     
-        you_elephant:np.uint32
-            Position of you and the elephant
-            You always is <= elephant when evaluated
+        you:np.uint16
+            The position of you
+        
+        elephant:np.uint16
+            The position of the elephant
 
         opened:np.uint16
             The opened valves, as bitmask
@@ -255,100 +260,47 @@ def soln_2():
         """
         # if time's up, return 0, no gain
         if time_left == 0:
-            return 0
-        # If all opened, due to enron accounting we have no added gain
-        elif opened == all_opened_rep:
-            return 0
+            return {(0, opened)}
         
-        # gets you and elephant
-        you = np.uint32(you_elephant & 0xFFFF0000) >> 16
-        elephant = (you_elephant & 0x0000FFFF)
-
         ### branching options ###
         
-        # max gain branch so far
-        max:int = 0
-        
-        # if you and elephant can open, open
-        if (
-            you != elephant and 
-            you & 0b1 == 0 and you & opened == 0 and
-            elephant & 0b1 == 0 and elephant & opened == 0
-        ):
-            branch_val:int = (
-                valves[you]['flow'] * (time_left - 1) +
-                valves[elephant]['flow'] * (time_left - 1) +
-                calc_flow_possible(
-                    you_elephant, opened | you | elephant, time_left - 1
-                )
-            )
-
-            if branch_val > max:
-                max = branch_val
+        # set of all outcomes
+        outcomes = set()
         
         # if you can open, open
-        if (
-            you & 0b1 == 0 and you & opened == 0
-        ):
-            # move elephant
-            for elephant_move in valves[elephant]['leads']:
-                # alias so we dont overrwrite you
-                you_temp = you
-                # moves lesser value to beginning
-                if you_temp > elephant_move:
-                    elephant_move, you_temp = you_temp, elephant_move
-                
-                branch_val:int = (
-                    valves[you]['flow'] * (time_left - 1) +
-                    calc_flow_possible(
-                        (you_temp << 16) | elephant_move,  opened | you, time_left - 1
-                    )
+        if not (you & opened) and you & 0b1 == 0:
+            outcomes |= {
+                (valves[you]['flow'] * (time_left - 1) + value, opened)
+                for value, opened in calc_all_possible_outcomes(
+                    you, opened | you, time_left - 1
                 )
-        
-                if branch_val > max:
-                    max = branch_val
-        
-        # if elephant can open, open
-        if (
-            elephant & 0b1 == 0 and elephant & opened == 0
-        ):
-            # move you
-            for you_move in valves[you]['leads']:
-                # aliases elephant so you don't remplace it by accident
-                elephant_temp = elephant
-                # moves smaller digit to the front
-                if you_move > elephant_temp:
-                    elephant_temp, you_move = you_move, elephant_temp
-                
-                branch_val:int = (
-                    valves[elephant]['flow'] * (time_left - 1) +
-                    calc_flow_possible(
-                        (you_move << 16) | elephant_temp, opened | elephant, time_left - 1
-                    )
-                )
+            }
 
-                if branch_val > max:
-                    max = branch_val
-        
-        # both move
+        # you move
         for you_move in valves[you]['leads']:
-            for elephant_move in valves[elephant]['leads']:
-                if you_move > elephant_move:
-                    elephant_move, you_move = you_move, elephant_move
-                branch_val:int = (
-                    calc_flow_possible(
-                        (you_move << 16) | elephant_move, opened, time_left - 1
-                    )
+            outcomes |= (
+                calc_all_possible_outcomes(
+                    you_move, opened, time_left - 1
                 )
-
-                if branch_val > max:
-                    max = branch_val
+            )
         
-        return max
-    
-    # just to generate DP
-    maximum_flow = calc_flow_possible((translation['AA'] << 16) | translation['AA'], 0, 26)
-    print(maximum_flow)
-    copy_ans(maximum_flow)
+        return outcomes
+
+    # just to generate all outcomes
+    outcomes = calc_all_possible_outcomes(translation['AA'], 0, 30)
+    # flow is maximized for all outcomes if the two entities DONT open the same valves (to prevent valve conflict and thus wasted turn) and have maximium total product compared to others
+    best_outcome = 0
+    for outcome in outcomes:
+        if outcome[0] > best_outcome:
+            best_outcome = outcome[0]
+    # for outcome0, outcome1 in it.combinations(outcomes, 2):
+    #     # no common valve
+    #     if outcome0[1] & outcome1[1] == 0:
+    #         total = outcome0[0] + outcome1[1]
+    #         if total > best_outcome:
+    #             best_outcome = total
+
+    print(best_outcome)
+    copy_ans(best_outcome)
 
 soln_2()
