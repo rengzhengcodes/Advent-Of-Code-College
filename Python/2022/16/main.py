@@ -167,11 +167,11 @@ def soln_1():
     print(maximum_flow)
     copy_ans(maximum_flow)
 
-soln_1()
+# soln_1()
 
 def soln_2():
     # parses input
-    with open("example.txt", 'r') as file:
+    with open("input.txt", 'r') as file:
         # raw file
         raw:str = file.read().rstrip()
         # singlizes so it works with parser
@@ -202,6 +202,8 @@ def soln_2():
         # we can represent the rest with LSB 1
         curr_nonzero_rep:np.uint16 = 2
         curr_zero_rep:np.uint16 = 1
+        # int where all the valves are opened
+        all_opened_rep:np.uint16 = 0
 
         # all valves
         all_valves = [valve for valve, item in valves_unmasked.items()]
@@ -214,6 +216,7 @@ def soln_2():
                 curr_zero_rep += 2
             else:
                 translation[valve] = curr_nonzero_rep
+                all_opened_rep = all_opened_rep | curr_nonzero_rep
                 curr_nonzero_rep = curr_nonzero_rep << 1
         
         del all_valves
@@ -252,7 +255,9 @@ def soln_2():
         """
         # if time's up, return 0, no gain
         if time_left == 0:
-            del you_elephant, opened, time_left
+            return 0
+        # If all opened, due to enron accounting we have no added gain
+        elif opened == all_opened_rep:
             return 0
         
         # gets you and elephant
@@ -270,28 +275,21 @@ def soln_2():
             you & 0b1 == 0 and you & opened == 0 and
             elephant & 0b1 == 0 and elephant & opened == 0
         ):
-            new_opened = opened | you | elephant
-        
             branch_val:int = (
                 valves[you]['flow'] * (time_left - 1) +
                 valves[elephant]['flow'] * (time_left - 1) +
                 calc_flow_possible(
-                    you_elephant, new_opened, time_left - 1
+                    you_elephant, opened | you | elephant, time_left - 1
                 )
             )
 
             if branch_val > max:
                 max = branch_val
-
-            del new_opened
-            del branch_val
         
         # if you can open, open
         if (
             you & 0b1 == 0 and you & opened == 0
         ):
-            new_opened = opened | you
-
             # move elephant
             for elephant_move in valves[elephant]['leads']:
                 # alias so we dont overrwrite you
@@ -303,22 +301,17 @@ def soln_2():
                 branch_val:int = (
                     valves[you]['flow'] * (time_left - 1) +
                     calc_flow_possible(
-                        (you_temp << 16) | elephant_move, new_opened, time_left - 1
+                        (you_temp << 16) | elephant_move,  opened | you, time_left - 1
                     )
                 )
         
                 if branch_val > max:
                     max = branch_val
-
-            del new_opened
-            del branch_val
         
         # if elephant can open, open
         if (
             elephant & 0b1 == 0 and elephant & opened == 0
         ):
-            new_opened = opened | elephant
-
             # move you
             for you_move in valves[you]['leads']:
                 # aliases elephant so you don't remplace it by accident
@@ -330,15 +323,12 @@ def soln_2():
                 branch_val:int = (
                     valves[elephant]['flow'] * (time_left - 1) +
                     calc_flow_possible(
-                        (you_move << 16) | elephant_temp, new_opened, time_left - 1
+                        (you_move << 16) | elephant_temp, opened | elephant, time_left - 1
                     )
                 )
 
                 if branch_val > max:
                     max = branch_val
-
-            del new_opened
-            del branch_val
         
         # both move
         for you_move in valves[you]['leads']:
