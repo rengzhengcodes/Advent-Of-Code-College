@@ -294,8 +294,10 @@ def soln_2():
 
             # move elephant
             for elephant_move in valves[elephant]['leads']:
+                # alias so we dont overrwrite you
                 you_temp = you
-                if you > elephant_move:
+                # moves lesser value to beginning
+                if you_temp > elephant_move:
                     elephant_move, you_temp = you_temp, elephant_move
                 
                 branch_val:int = (
@@ -305,8 +307,8 @@ def soln_2():
                     )
                 )
         
-            if branch_val > max:
-                max = branch_val
+                if branch_val > max:
+                    max = branch_val
 
             del new_opened
             del branch_val
@@ -319,8 +321,10 @@ def soln_2():
 
             # move you
             for you_move in valves[you]['leads']:
+                # aliases elephant so you don't remplace it by accident
                 elephant_temp = elephant
-                if you_move > elephant:
+                # moves smaller digit to the front
+                if you_move > elephant_temp:
                     elephant_temp, you_move = you_move, elephant_temp
                 
                 branch_val:int = (
@@ -330,8 +334,8 @@ def soln_2():
                     )
                 )
 
-            if branch_val > max:
-                max = branch_val
+                if branch_val > max:
+                    max = branch_val
 
             del new_opened
             del branch_val
