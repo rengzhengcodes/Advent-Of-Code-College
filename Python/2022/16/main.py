@@ -150,7 +150,6 @@ def soln_1():
             if branch_val > max:
                 max = branch_val
 
-            del new_opened
             del branch_val
 
         # you move
