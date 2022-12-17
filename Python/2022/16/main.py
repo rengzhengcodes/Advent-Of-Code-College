@@ -287,18 +287,29 @@ def soln_2():
         return outcomes
 
     # just to generate all outcomes
-    outcomes = calc_all_possible_outcomes(translation['AA'], 0, 30)
+    outcomes = calc_all_possible_outcomes(translation['AA'], 0, 26)
+    # identifies best max value for all combinations of opened and outcome
+    best_per_opened:dict = dict()
+    for outcome in outcomes:
+        if outcome[1] not in best_per_opened:
+            best_per_opened[outcome[1]] = outcome[0]
+        elif outcome[0] > best_per_opened[outcome[1]]:
+            best_per_opened[outcome[1]] = outcome[0]
+    
+    del outcomes
+
     # flow is maximized for all outcomes if the two entities DONT open the same valves (to prevent valve conflict and thus wasted turn) and have maximium total product compared to others
     best_outcome = 0
-    for outcome in outcomes:
-        if outcome[0] > best_outcome:
-            best_outcome = outcome[0]
-    # for outcome0, outcome1 in it.combinations(outcomes, 2):
-    #     # no common valve
-    #     if outcome0[1] & outcome1[1] == 0:
-    #         total = outcome0[0] + outcome1[1]
-    #         if total > best_outcome:
-    #             best_outcome = total
+    # now data is flipped, in (opened, value) format
+    best_outcomes = set(best_per_opened.items())
+
+
+    for outcome0, outcome1 in it.combinations(best_outcomes, 2):
+        # no common valve
+        if outcome0[0] & outcome1[0] == 0:
+            total = outcome0[1] + outcome1[1]
+            if total > best_outcome:
+                best_outcome = total
 
     print(best_outcome)
     copy_ans(best_outcome)
