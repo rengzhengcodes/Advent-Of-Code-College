@@ -109,7 +109,7 @@ def soln_1():
                         you:np.uint16, opened:np.uint16, time_left:np.uint8 = 30
         ) -> int:
         """
-        Calculates all the flow possible given a starting point     
+        Calculates max flow possible given a starting point     
         you:np.uint16
             The position of you
         
@@ -213,28 +213,39 @@ def soln_2():
 
         # the translation book
         translation:dict = dict()
+        # translates all valves
         for valve in all_valves:
+            # if there is no flow
             if valves_unmasked[valve]['flow'] == 0:
+                # assign it a zero bit representation
                 translation[valve] = curr_zero_rep
+                # increment the representation by two to keep LSB = 0
                 curr_zero_rep += 2
+            # if there is flow
             else:
+                # assign a nonzero flow bitrep (acts as bitmask for this rep)
                 translation[valve] = curr_nonzero_rep
+                # mask the all_opened_rep so we can keep track of what the all opened state looks like
                 all_opened_rep |= curr_nonzero_rep
+                # bitshift the mask for the next one, to be nice
                 curr_nonzero_rep = curr_nonzero_rep << 1
         
+        # delete unecessary values so we don't have runaway valves
         del all_valves
         del curr_nonzero_rep
         del curr_zero_rep
 
-        # actual valves
+        # actual valves, bit representation
         valves:dict = dict()
-        # translate to bitmask
+        
+        # translates all data to the bit representation
         for valve, item in valves_unmasked.items():
             valves[translation[valve]] = {
                 'flow': item['flow'],
                 'leads': tuple([translation[lead] for lead in item['leads']])
             }
-         
+        
+        # deletes the unmasked version as we're done with it
         del valves_unmasked
 
     @cache
@@ -269,6 +280,7 @@ def soln_2():
         
         # if you can open, open
         if not (you & opened) and you & 0b1 == 0:
+            # increments all the values by enron accounting, then ors into possibility space
             outcomes |= {
                 (valves[you]['flow'] * (time_left - 1) + value, opened)
                 for value, opened in calc_all_possible_outcomes(
@@ -278,6 +290,7 @@ def soln_2():
 
         # you move
         for you_move in valves[you]['leads']:
+            # ors all the possibilities into the outcomes
             outcomes |= (
                 calc_all_possible_outcomes(
                     you_move, opened, time_left - 1
@@ -288,14 +301,18 @@ def soln_2():
 
     # just to generate all outcomes
     outcomes = calc_all_possible_outcomes(translation['AA'], 0, 26)
+
     # identifies best max value for all combinations of opened and outcome
     best_per_opened:dict = dict()
     for outcome in outcomes:
+        # if no current best, now you're the current best
         if outcome[1] not in best_per_opened:
             best_per_opened[outcome[1]] = outcome[0]
+        # if current best, and you best it, you're the current best
         elif outcome[0] > best_per_opened[outcome[1]]:
             best_per_opened[outcome[1]] = outcome[0]
     
+    # delete this, redundant we just need the best
     del outcomes
 
     # flow is maximized for all outcomes if the two entities DONT open the same valves (to prevent valve conflict and thus wasted turn) and have maximium total product compared to others
@@ -303,7 +320,7 @@ def soln_2():
     # now data is flipped, in (opened, value) format
     best_outcomes = set(best_per_opened.items())
 
-
+    # works for NC2, but should scale to NCN if you chain the &s and the outcome parsing
     for outcome0, outcome1 in it.combinations(best_outcomes, 2):
         # no common valve
         if outcome0[0] & outcome1[0] == 0:
