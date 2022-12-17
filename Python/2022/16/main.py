@@ -163,7 +163,7 @@ def soln_1():
         return max
     
     # just to generate DP
-    maximum_flow = calc_flow_possible(translation['AA'], 0, 26)
+    maximum_flow = calc_flow_possible(translation['AA'], 0, 30)
     print(maximum_flow)
     copy_ans(maximum_flow)
 
@@ -347,8 +347,8 @@ def soln_2():
                     )
                 )
 
-            if branch_val > max:
-                max = branch_val
+                if branch_val > max:
+                    max = branch_val
         
         return max
     
