@@ -137,15 +137,16 @@ def soln_1():
         
         # if you can open, open
         if not (you & opened) and you % 2 == 0:
-            new_opened = opened | you
-        
+            # gets the value of the best from this possibility tree
             branch_val:int = (
+                # adds EV of opening via enron accounting
                 valves[you]['flow'] * (time_left - 1) +
                 calc_flow_possible(
-                    you, new_opened, time_left - 1
+                    you, opened | you, time_left - 1
                 )
             )
 
+            # if EV calculated > current max EV, replace
             if branch_val > max:
                 max = branch_val
 
@@ -154,12 +155,14 @@ def soln_1():
 
         # you move
         for you_move in valves[you]['leads']:
+            # gets the value of the best from this possibility tree
             branch_val:int = (
                 calc_flow_possible(
                     you_move, opened, time_left - 1
                 )
             )
 
+            # if EV greater than current max EV, replace current max EV
             if branch_val > max:
                 max = branch_val
         
