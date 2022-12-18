@@ -331,23 +331,19 @@ def soln_2():
         Returns:
             Maximum possible flow from state
         """
-        # if time's up, return 0, no gain
-        if time_left < 0:
-            return {(0, opened)}
         # set of all outcomes
         outcomes = set()
+        # stay put
+        outcomes.add((0, opened))
         # you move and open
         for you_move, distance in simplified[you]['leads'].items():
             # ors all the possibilities into the outcomes
-            if distance > time_left - 1:
-                outcomes.add((0, opened))
-            else:
-                if not (you_move & opened):
-                    outcomes |= (
-                        calc_all_possible_outcomes(
-                            you_move, opened | you_move, time_left - distance - 1
-                        )
+            if not (you_move & opened) and (distance + 1) < time_left:
+                outcomes |= (
+                    calc_all_possible_outcomes(
+                        you_move, opened | you_move, time_left - (distance + 1)
                     )
+                )
         
         # enron accounting for added EV to return from opening current valve
         return {(value + simplified[you]['flow'] * time_left, opened_valves) for value, opened_valves in outcomes}
@@ -366,6 +362,9 @@ def soln_2():
         elif outcome[0] > best_per_opened[outcome[1]]:
             best_per_opened[outcome[1]] = outcome[0]
     
+    # test it works for part 1 1 agent
+    # print(max(best_per_opened.values()))
+
     # delete this, redundant we just need the best
     del outcomes
 
