@@ -339,18 +339,22 @@ def soln_2():
         # you move and open
         for you_move, distance in simplified[you]['leads'].items():
             # ors all the possibilities into the outcomes
-            if not (you_move & opened):
-                outcomes |= (
-                    calc_all_possible_outcomes(
-                        you_move, opened | you_move, time_left - distance - 1
+            if distance > time_left - 1:
+                outcomes.add((0, opened))
+            else:
+                if not (you_move & opened):
+                    outcomes |= (
+                        calc_all_possible_outcomes(
+                            you_move, opened | you_move, time_left - distance - 1
+                        )
                     )
-                )
         
         # enron accounting for added EV to return from opening current valve
         return {(value + simplified[you]['flow'] * time_left, opened_valves) for value, opened_valves in outcomes}
 
     # just to generate all outcomes
     outcomes = calc_all_possible_outcomes(translation['AA'], 0, 26)
+    del simplified
 
     # identifies best max value for all combinations of opened and outcome
     best_per_opened:dict = dict()
