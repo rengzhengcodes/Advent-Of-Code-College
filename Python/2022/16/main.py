@@ -215,6 +215,8 @@ def soln_2():
 
         # the translation book
         translation:dict = dict()
+        # nonzero flow valves
+        good_valves:set = set()
         # translates all valves
         for valve in all_valves:
             # if there is no flow
@@ -227,6 +229,8 @@ def soln_2():
             else:
                 # assign a nonzero flow bitrep (acts as bitmask for this rep)
                 translation[valve] = curr_nonzero_rep
+                # adds to good valves
+                good_valves.add(curr_nonzero_rep)
                 # mask the all_opened_rep so we can keep track of what the all opened state looks like
                 all_opened_rep |= curr_nonzero_rep
                 # bitshift the mask for the next one, to be nice
@@ -249,6 +253,65 @@ def soln_2():
         
         # deletes the unmasked version as we're done with it
         del valves_unmasked
+        
+        def collect_nonzero_relation(start:np.uint16) -> None:
+            """
+            Returns distance from starting point to all other nonzero flow pipes
+            start:np.uint16
+                A valve with 0 flow
+            """
+            # BFS Queue
+            queue:deque = deque()
+            queue.append(start)
+            # BFS Visited
+            visited:set = set()
+            # adds start to visited, no double back
+            visited.add(start)
+            # distance dictionary from start
+            distances:dict = dict()
+            # all valves we should keep in simplified
+            good_valve_count:int = all_opened_rep.bit_count()
+            # steps taken so far
+            steps:int = 0
+            while(len(distances) < good_valve_count - 1):
+                # increment step counter
+                steps += 1
+                # next queue, to not mix with current step queue
+                next_queue = deque()
+
+                # empties current queue
+                while(len(queue) > 0):
+                    for lead in valves[queue.popleft()]['leads']:
+                        # if we haven't been here before
+                        if lead not in visited:
+                            # mark that we've been here before
+                            visited.add(lead)
+                            # if this is a nonzero flow pipe, note the steps
+                            if lead in good_valves:
+                                distances[lead] = steps
+                            # add lead to queue
+                            next_queue.append(lead)
+
+                # next iteration gets next_queue
+                queue = next_queue
+
+            return distances
+                    
+                    
+
+        # simplified map of only valves with nonzero flow
+        simplified:dict = dict()
+        # notes 'AA', the starting point
+        simplified[translation['AA']] = dict()
+        simplified[translation['AA']]['leads'] = collect_nonzero_relation(translation['AA'])
+        simplified[translation['AA']]['flow'] = 0
+        # removes all empty valves as we can't open them
+        for valve in good_valves:
+            simplified[valve] = dict()
+            simplified[valve]['leads'] = collect_nonzero_relation(valve)
+            simplified[valve]['flow'] = valves[valve]['flow']
+        del valves
+        del good_valves
 
     @cache
     def calc_all_possible_outcomes(
@@ -258,9 +321,6 @@ def soln_2():
         Calculates all the flow possible given a starting point     
         you:np.uint16
             The position of you
-        
-        elephant:np.uint16
-            The position of the elephant
 
         opened:np.uint16
             The opened valves, as bitmask
@@ -272,34 +332,22 @@ def soln_2():
             Maximum possible flow from state
         """
         # if time's up, return 0, no gain
-        if time_left == 0:
+        if time_left < 0:
             return {(0, opened)}
-        
-        ### branching options ###
-        
         # set of all outcomes
         outcomes = set()
-        
-        # if you can open, open
-        if not (you & opened) and you & 0b1 == 0:
-            # increments all the values by enron accounting, then ors into possibility space
-            outcomes |= {
-                (valves[you]['flow'] * (time_left - 1) + value, opened)
-                for value, opened in calc_all_possible_outcomes(
-                    you, opened | you, time_left - 1
-                )
-            }
-
-        # you move
-        for you_move in valves[you]['leads']:
+        # you move and open
+        for you_move, distance in simplified[you]['leads'].items():
             # ors all the possibilities into the outcomes
-            outcomes |= (
-                calc_all_possible_outcomes(
-                    you_move, opened, time_left - 1
+            if not (you_move & opened):
+                outcomes |= (
+                    calc_all_possible_outcomes(
+                        you_move, opened | you_move, time_left - distance - 1
+                    )
                 )
-            )
         
-        return outcomes
+        # enron accounting for added EV to return from opening current valve
+        return {(value + simplified[you]['flow'] * time_left, opened_valves) for value, opened_valves in outcomes}
 
     # just to generate all outcomes
     outcomes = calc_all_possible_outcomes(translation['AA'], 0, 26)
@@ -319,13 +367,11 @@ def soln_2():
 
     # flow is maximized for all outcomes if the two entities DONT open the same valves (to prevent valve conflict and thus wasted turn) and have maximium total product compared to others
     best_outcome = 0
-    # now data is flipped, in (opened, value) format
-    best_outcomes = set(best_per_opened.items())
 
     # works for NC2, but should scale to NCN if you chain the &s and the outcome parsing
-    for outcome0, outcome1 in it.combinations(best_outcomes, 2):
+    for outcome0, outcome1 in it.combinations(best_per_opened.items(), 2):
         # no common valve
-        if outcome0[0] & outcome1[0] == 0:
+        if not (outcome0[0] & outcome1[0]):
             total = outcome0[1] + outcome1[1]
             if total > best_outcome:
                 best_outcome = total
