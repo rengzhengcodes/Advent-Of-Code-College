@@ -237,7 +237,7 @@ def soln_1():
             string += f"Level: {self.level}"
             return string
 
-    rocks:int = num
+    rocks:int = 2022
     stream_pos:int = 0
     for i in range(rocks):
         # print(i, np.array(shapes[i % len(shapes)], ndmin=1))
@@ -258,7 +258,7 @@ def soln_1():
     print(height)
     copy_ans(height)
 
-# soln_1()
+soln_1()
 
 def soln_2():
     # parses input
