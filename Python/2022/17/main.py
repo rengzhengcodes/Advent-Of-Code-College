@@ -258,7 +258,7 @@ def soln_1():
     print(height)
     copy_ans(height)
 
-soln_1()
+# soln_1()
 
 def soln_2():
     # parses input
