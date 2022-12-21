@@ -237,7 +237,7 @@ def soln_1():
             string += f"Level: {self.level}"
             return string
 
-    rocks:int = 2022
+    rocks:int = num
     stream_pos:int = 0
     for i in range(rocks):
         # print(i, np.array(shapes[i % len(shapes)], ndmin=1))
@@ -254,9 +254,6 @@ def soln_1():
         # one more stream call after it stops moving
         stream_pos += 1
 
-
-
-
     height:int = len(levels) - 1
     print(height)
     copy_ans(height)
@@ -265,7 +262,7 @@ def soln_1():
 
 def soln_2():
     # parses input
-    with open("example.txt", 'r') as file:
+    with open("input.txt", 'r') as file:
         # raw file
         stream:str = file.read().rstrip()
     
@@ -456,7 +453,7 @@ def soln_2():
             string += f"Level: {self.level}"
             return string
 
-    rocks:int = 2022 #1000000000000
+    rocks:int = 1000000000000
     stream_pos:int = 0
     rock:int = 0
 
@@ -539,13 +536,12 @@ def soln_2():
     height:int = 0
     if repetitive:
         # calculates height over remaining periods
-        height = period_height * (rocks - rock) // rock_distance
-        # remaining rocks
-        rocks = (rocks - rock) % rock_distance
-        print(period_height, (rocks - rock) // rock_distance, rocks)
+        height = period_height * ((rocks - rock) // rock_distance)
+        # goes to proper rock
+        rock += rock_distance * ((rocks - rock) // rock_distance)
 
         # as it's repetitive, we can simply run the remainder of the simulation like nothing happened and then append to the height covered by the remaining periods
-        for i in range(rocks):
+        for i in range(rock, rocks):
             # print(i, np.array(shapes[i % len(shapes)], ndmin=1))
             falling:Rock = Rock(
                 np.array(shapes[i % len(shapes)], ndmin=1), 
@@ -559,7 +555,6 @@ def soln_2():
             
             # one more stream call after it stops moving
             stream_pos += 1
-
 
     height += len(levels) - 1
     print(height)
