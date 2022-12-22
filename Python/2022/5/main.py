@@ -1,6 +1,6 @@
 # allows import of advent_io
 import sys
-sys.path.append("../../")
+sys.path.append("../")
 from advent_io import *
 
 # imports a stack-like object

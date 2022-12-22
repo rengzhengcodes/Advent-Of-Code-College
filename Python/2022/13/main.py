@@ -11,7 +11,7 @@ myself in case my implementation is somehow messy.
 
 
 import sys
-sys.path.append("../../")
+sys.path.append("../")
 from advent_io import *
 
 # type hinting
