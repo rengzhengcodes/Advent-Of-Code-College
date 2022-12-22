@@ -74,14 +74,22 @@ def soln_1():
             # we go by 1/2 because the center is 1/2 distance from everything,
             # anything else would miscount
             for num in {-1/2, 1/2}:
+                # creates new vector object for surface position
                 vector:list = list(center)
-                vector[i] = center[i] + num
+                # finds surface by offsetting from center
+                vector[i] += num
+                # tuples vector so can be added to set
                 vector:tuple = tuple(vector)
+
+                # checks if it's in repeated, if it is, it's already an unexposed
+                # edge so skip
                 if vector in repeated:
                     continue
+                # if it's in unrepeated, it's actually repeated so move to repeated
                 elif vector in unrepeated:
                     unrepeated.remove(vector)
                     repeated.add(vector)
+                # if it's new (at least to us), add to unrepeated
                 else:
                     unrepeated.add(vector)
     
@@ -89,7 +97,7 @@ def soln_1():
     print(surface_area)
     copy_ans(surface_area)
 
-# soln_1()
+soln_1()
 
 def soln_2():
     # parses input
@@ -122,14 +130,22 @@ def soln_2():
             # we go by 1/2 because the center is 1/2 distance from everything,
             # anything else would miscount. Float safe as power of 2
             for num in {-1/2, 1/2}:
+                # creates a list from center, copies values
                 vector:list = list(center)
-                vector[i] = center[i] + num
+                # modifies list to get surface vector
+                vector[i] += num
+                # tuples surface vector so it's addable to a set
                 vector:tuple = tuple(vector)
+
+                # if vector is already established to be repeated, continue
                 if vector in repeated:
                     continue
+                # if vector is in unrepeated, it's actually repeated, move
+                # to repeated
                 elif vector in unrepeated:
                     unrepeated.remove(vector)
                     repeated.add(vector)
+                # if it's new to us, add to unrepeated
                 else:
                     unrepeated.add(vector)
     
@@ -146,6 +162,8 @@ def soln_2():
         y_coords.append(cube[1])
         z_coords.append(cube[2])
 
+    # axes where NO lava is (highest and lowest), allowing us to make a "container"
+    # big enough for water to flow around it
     lower_bounds:tuple = (min(x_coords) - 1, min(y_coords) - 1, min(z_coords) - 1)
     upper_bounds:tuple = (max(x_coords) + 1, max(y_coords) + 1, max(z_coords) + 1)
 
@@ -195,9 +213,13 @@ def soln_2():
                 # we go by 1/2 because the center is 1/2 distance from everything,
                 # anything else would miscount. Float safe as power of 2
                 for num in {-1/2, 1/2}:
+                    # creates vector, copied from current position values
                     vector:list = list(position)
+                    # modifies vector to get surface
                     vector[i] += num
+                    # makes surface hashable by tupleifying
                     vector:tuple = tuple(vector)
+
                     # adds to touched if we touch a surface
                     if vector in surfaces:
                         touched.add(vector)
@@ -205,12 +227,14 @@ def soln_2():
             # calculates valid surrounding cells to flow to
             for i in range(3):
                 for num in {-1, 1}:
+                    # modifying the one coord value in question for orthogonal movement
                     modified_coord:int = position[i] + num
-                    # if not in bounds, continue
+
+                    # if not in bounds/container, continue, disregard point
                     if not (lower_bounds[i] <= modified_coord <= upper_bounds[i]):
                         continue
 
-                    # else, calculate new coordinate
+                    # else, calculate new coordinate and make hashable by tupleifying
                     vector:list = list(position)
                     vector[i] = modified_coord
                     vector:tuple = tuple(vector)
