@@ -144,7 +144,7 @@ def soln_1():
             # checks if we produce all resources for this robot
             if np.logical_and(robot_cost.astype(bool), ~gain.astype(bool)).any():
                 continue
-
+            
             # calculates the turns to build the robot with negative net values
             for resource in range(len(net)):
                 if net[resource] >= 0:
@@ -152,16 +152,16 @@ def soln_1():
                 else:
                     assert gain[resource] > 0 and net[resource] < 0
                     # turns to achieve net with current gain
-                    net[resource] = net[resource] / gain[resource]
+                    time:float = net[resource] / gain[resource]
                     # ceilings the value to calculate min terms needed
-                    net[resource] = ceil(net[resource] * -1)
+                    net[resource] = ceil(time * -1)
                 assert net[resource] >= 0 and isinstance(net[resource], np.int64), f"{net[resource]}"
             
             # calculates turns needed to get all resources AND build
             turns:int = net.max() + 1
             
             # if turns > turns left, 0 more geodes gotten
-            if turns >= time_left:
+            if turns -1 >= time_left:
                 value:int = 0
             else:
                 # declared to save operations from a boolean check
@@ -179,7 +179,7 @@ def soln_1():
                     new_robots:tuple = tuple(new_robots)
                 
                 value += find_max_blueprint(
-                    blueprint_id, tuple(resources - robot_cost + gain * turns), 
+                    blueprint_id, tuple(resources - robot_cost + (gain * turns)), 
                     new_robots, time_left - turns
                 )          
             
@@ -190,6 +190,8 @@ def soln_1():
         return max_EV
     
     max_geodes:int = find_max_blueprint(1, (0, 0, 0), (1, 0, 0))
+    print(max_geodes)
+    max_geodes:int = find_max_blueprint(2, (0, 0, 0), (1, 0, 0))
     print(max_geodes)
 
 soln_1()
