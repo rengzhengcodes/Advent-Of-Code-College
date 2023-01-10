@@ -53,7 +53,7 @@ NOTES:
 
 def soln_1():
     # parses input
-    with open("example.txt", 'r') as file:
+    with open("input.txt", 'r') as file:
         # raw file
         raw:str = file.read().rstrip()
         # blueprints
@@ -189,9 +189,13 @@ def soln_1():
         # returns max subbranch
         return max_EV
     
-    max_geodes:int = find_max_blueprint(1, (0, 0, 0), (1, 0, 0))
-    print(max_geodes)
-    max_geodes:int = find_max_blueprint(2, (0, 0, 0), (1, 0, 0))
-    print(max_geodes)
+    total_quality:int = 0
+    for id in blueprints:
+        max_geodes:int = find_max_blueprint(id, (0, 0, 0), (1, 0, 0))
+        quality_level:int = max_geodes * id
+        total_quality += quality_level
+    
+    print(total_quality)
+    copy_ans(int(total_quality))
 
 soln_1()
