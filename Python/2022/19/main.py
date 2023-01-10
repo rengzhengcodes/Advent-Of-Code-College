@@ -89,6 +89,11 @@ def soln_1():
 
         print(blueprints)
 
+    # ids for all robots
+    ORE:int = 0
+    CLAY:int = 1
+    OBSI:int = 2
+    GEODE:int = 3
     @cache
     def find_max_blueprint(
             blueprint_id:int, resources:tuple, robots:tuple, time_left:int=24
@@ -125,47 +130,52 @@ def soln_1():
         blueprint:tuple = blueprints[blueprint_id]
 
         # goes through all robot in tuple
-        for i in range(4):
+        for robot in range(4):
             # if producing the max amount we can use per turn, don't need more of this robot
-            if i != 3 and blueprint[-1][i] <= robots[i]:
+            if robot != GEODE and blueprint[-1][robot] <= robots[robot]:
                 continue
+
             # vectorizes current robot cost
-            robot_cost:np.ndarray = blueprint[i]
+            robot_cost:np.ndarray = blueprint[robot]
             # net resources if we build a robot
             net:np.ndarray = resources - robot_cost
-            # only calculates negative values
+            # removes positive values
             np.clip(net, a_min=None, a_max=0)
             # checks if we produce all resources for this robot
-            if np.logical_and(robot_cost.astype(bool), ~gain.astype(bool)[0:3]).any():
+            if np.logical_and(robot_cost.astype(bool), ~gain.astype(bool)).any():
                 continue
+
             # calculates the turns to build the robot with negative net values
-            for j in range(len(net)):
-                if net[j] >= 0:
-                    net[j] = 0
+            for resource in range(len(net)):
+                if net[resource] >= 0:
+                    net[resource] = 0
                 else:
-                    assert gain[j] != 0 and net[j] < 0
-                    net[j] = net[j] / gain[j]
+                    assert gain[resource] > 0 and net[resource] < 0
+                    # turns to achieve net with current gain
+                    net[resource] = net[resource] / gain[resource]
                     # ceilings the value to calculate min terms needed
-                    net[j] = ceil(net[j] * -1)
-                    assert net[j] >= 0
+                    net[resource] = ceil(net[resource] * -1)
+                assert net[resource] >= 0 and isinstance(net[resource], np.int64), f"{net[resource]}"
+            
             # calculates turns needed to get all resources AND build
             turns:int = net.max() + 1
+            
             # if turns > turns left, 0 more geodes gotten
             if turns >= time_left:
                 value:int = 0
             else:
                 # declared to save operations from a boolean check
                 value:int = 0
-                # if building a geode robot, credit immediately to not store
-                if i == 3:
-                    # -1 on top of build turn because 1 more turn to get first geode
-                    value += max(0, time_left - turns)
+
+                # if building a geode robot, credit immediately to not store Geode robot population
+                if robot == GEODE:
+                    value += time_left - turns
                     new_robots:tuple = robots     
                 # else store robot count
                 else:
                     # robots after build
                     new_robots:list = list(robots)
-                    new_robots[i] += 1
+                    new_robots[robot] += 1
                     new_robots:tuple = tuple(new_robots)
                 
                 value += find_max_blueprint(
