@@ -317,15 +317,12 @@ def soln_2():
         """
         # end condition: times up! (Or it's 1 and nothing done matters)
         if time_left <= 1:
-            assert time_left >= 0
             return 0
         
         # tracks max branch gain
         max_EV:int = 0
         # vectorizes resources
         resources:np.ndarray = np.array(resources)
-        # makes sure resources are nonnegative
-        assert (resources >= 0).all()
         # calculates gain per turn until next robot
         gain:np.ndarray = np.array(robots)
         
@@ -353,12 +350,10 @@ def soln_2():
                 if net[resource] >= 0:
                     net[resource] = 0
                 else:
-                    assert gain[resource] > 0 and net[resource] < 0
                     # turns to achieve net with current gain
                     time:float = net[resource] / gain[resource]
                     # ceilings the value to calculate min terms needed
                     net[resource] = ceil(time * -1)
-                assert net[resource] >= 0 and isinstance(net[resource], np.int64), f"{net[resource]}"
             
             # calculates turns needed to get all resources AND build
             turns:int = net.max() + 1
