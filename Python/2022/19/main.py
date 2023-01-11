@@ -359,7 +359,7 @@ def soln_2():
             turns:int = net.max() + 1
             
             # if turns > turns left, 0 more geodes gotten
-            if turns >= time_left:
+            if turns + 1 >= time_left:
                 value:int = 0
             else:
                 # declared to save operations from a boolean check
