@@ -338,7 +338,7 @@ def soln_2():
             # vectorizes current robot cost
             robot_cost:np.ndarray = blueprint[robot]
             # checks if we produce all resources for this robot
-            if np.logical_and(robot_cost.astype(bool), ~gain.astype(bool)).any():
+            if np.logical_and(robot_cost, np.logical_not(gain)).any():
                 continue
             # net resources if we build a robot
             net:np.ndarray = resources - robot_cost
