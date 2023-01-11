@@ -392,6 +392,7 @@ def soln_2():
         print(id)
         max_geodes:int = find_max_blueprint(id, (0, 0, 0), (1, 0, 0))
         quality_product *= max_geodes
+        find_max_blueprint.cache_clear()
     
     print(quality_product)
     copy_ans(int(quality_product))
