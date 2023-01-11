@@ -94,6 +94,33 @@ def soln_1():
     CLAY:int = 1
     OBSI:int = 2
     GEODE:int = 3
+
+    def unpack_values(
+        data:np.uint64, resource:np.uint8
+    ) -> np.uint16:
+        """
+        Unpacks ore, clay, obsidian out of a uint64
+
+        data:np.uint64
+            The data in question in the format of parity_ore_clay_obsidian
+        resource:np.uint8
+            The resource we're trying to access
+        """
+        mask:np.uint64 = 0x1FFFFF
+        shift:int = None
+        match resource:
+            case [ORE]:
+                shift = 64 // 3 * 3
+            case [CLAY]:
+                shift = 64 // 3 * 2
+            case [OBSI]:
+                shift = 64 // 3 
+            case _:
+                raise ValueError(resource)
+        
+        mask = mask << shift
+        return (data & mask) >> shift
+
     @cache
     def find_max_blueprint(
             blueprint_id:int, resources:tuple, robots:tuple, time_left:int=24
