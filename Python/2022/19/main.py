@@ -297,9 +297,18 @@ def soln_2():
         mask = mask << shift
         return (data & mask) >> shift
 
+    """
+    keeps track of the maximum branch value so far
+    
+    OF STRUCTURE MAX_BRANCH[id]
+
+    optimization from: https://www.reddit.com/r/adventofcode/comments/zpihwi/comment/j0tls7a/
+    """
+    max_branch:dict = dict()
+
     @cache
     def find_max_blueprint(
-            blueprint_id:int, resources:tuple, robots:tuple, time_left:int=32
+            blueprint_id:int, resources:tuple, robots:tuple, current_value:int, time_left:int=32
         ) -> int:
         """
         Finds the max geodes in a given time
@@ -310,6 +319,8 @@ def soln_2():
             (ore, clay, obsidian)
         robot_count:tuple
             (ore, clay, obsidian)
+        current_value:int
+            Guaranteed value of this branch
         time_left:int
             Time left
         
@@ -317,8 +328,12 @@ def soln_2():
         """
         # end condition: times up! (Or it's 1 and nothing done matters)
         if time_left <= 1:
+            # if it didn't get terminated until now, it's the best branch so far
+            max_branch[id] = current_value
             return 0
-        
+        # end condition: best possible Geode gain is worst than best current branch
+        elif time_left * (time_left - 1) / 2 + current_value <= max_branch[id]:
+            return 0
         # tracks max branch gain
         max_EV:int = 0
         # vectorizes resources
@@ -381,19 +396,26 @@ def soln_2():
                 
                 value += find_max_blueprint(
                     blueprint_id, tuple(resources - robot_cost + (gain * turns)), 
-                    new_robots, time_left - turns
+                    new_robots, value + current_value, time_left - turns
                 )          
             
             if value > max_EV:
                 max_EV = value
         
-        # returns max subbranch
+        # if we have improvement on max_branch, replace max_branch, else kill branch
+        if max_EV + current_value > max_branch[id]:
+            # returns max subbranch
+            max_branch[id] = max_EV + current_value
+        
         return max_EV
     
     quality_product:int = 1
     for id in range(1, 4):
         print(id)
-        max_geodes:int = find_max_blueprint(id, (0, 0, 0), (1, 0, 0))
+        # prevents keyerror
+        max_branch[id] = 0
+        # calculation
+        max_geodes:int = find_max_blueprint(id, (0, 0, 0), (1, 0, 0), 0)
         quality_product *= max_geodes
         find_max_blueprint.cache_clear()
     
