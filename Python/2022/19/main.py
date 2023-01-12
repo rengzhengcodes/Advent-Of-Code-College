@@ -314,12 +314,10 @@ def soln_2():
 
         # goes through all robot in tuple
         for robot in range(4):
-            # if producing the max amount we can use per turn, don't need more of this robot
-            if robot != GEODE: 
-                # optimization from https://www.reddit.com/r/adventofcode/comments/zpy5rm/2022_day_19_what_are_your_insights_and/
-                # essentially, a robot must be able to pay itself off
-                if robots[robot] * time_left + resources[robot] >= time_left * blueprint[-1][robot]:
-                    continue
+            # optimization from https://www.reddit.com/r/adventofcode/comments/zpy5rm/2022_day_19_what_are_your_insights_and/
+            # essentially, a robot must be able to pay itself off
+            if robot != GEODE and robots[robot] * time_left + resources[robot] >= time_left * blueprint[-1][robot]:
+                continue
 
             # pulls out current robot cost
             robot_cost:tuple = blueprint[robot]
