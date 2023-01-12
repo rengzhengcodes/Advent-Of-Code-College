@@ -328,8 +328,6 @@ def soln_2():
         """
         # end condition: times up! (Or it's 1 and nothing done matters)
         if time_left <= 1:
-            # if it didn't get terminated until now, it's the best branch so far
-            max_branch[id] = current_value
             return 0
         # end condition: best possible Geode gain is worst than best current branch
         elif time_left * (time_left - 1) / 2 + current_value <= max_branch[id]:
