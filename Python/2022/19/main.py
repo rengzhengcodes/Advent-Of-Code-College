@@ -248,19 +248,19 @@ def soln_2():
             # cost in np.uint 16, 5 bits per building resource.
             blueprints[np.uint8(blueprintID)] = (
                 # ore robot cost
-                np.array((ore_ore_cost, 0, 0)),
+                (ore_ore_cost, 0, 0),
                 # clay robot cost
-                np.array((clay_ore_cost, 0, 0)),
+                (clay_ore_cost, 0, 0),
                 # obsidian robot cost
-                np.array((obsidian_ore_cost, obsidian_clay_cost, 0)),
+                (obsidian_ore_cost, obsidian_clay_cost, 0),
                 # geode robot cost
-                np.array((geode_ore_cost, 0, geode_obsidian_cost)),
+                (geode_ore_cost, 0, geode_obsidian_cost),
                 # max resource/turn needed for each resource
-                np.array((
+                (
                     max((ore_ore_cost, clay_ore_cost, obsidian_ore_cost, geode_ore_cost)),
                     obsidian_clay_cost,
                     geode_obsidian_cost
-                ))
+                )
             )
 
         print(blueprints)
@@ -270,32 +270,6 @@ def soln_2():
     CLAY:int = 1
     OBSI:int = 2
     GEODE:int = 3
-
-    def unpack_values(
-        data:np.uint64, resource:np.uint8
-    ) -> np.uint16:
-        """
-        Unpacks ore, clay, obsidian out of a uint64
-
-        data:np.uint64
-            The data in question in the format of parity_ore_clay_obsidian
-        resource:np.uint8
-            The resource we're trying to access
-        """
-        mask:np.uint64 = 0x1FFFFF
-        shift:int = None
-        match resource:
-            case [ORE]:
-                shift = 64 // 3 * 3
-            case [CLAY]:
-                shift = 64 // 3 * 2
-            case [OBSI]:
-                shift = 64 // 3 
-            case _:
-                raise ValueError(resource)
-        
-        mask = mask << shift
-        return (data & mask) >> shift
 
     """
     keeps track of the maximum branch value so far
@@ -334,10 +308,6 @@ def soln_2():
             return 0
         # tracks max branch gain
         max_EV:int = 0
-        # vectorizes resources
-        resources:np.ndarray = np.array(resources)
-        # calculates gain per turn until next robot
-        gain:np.ndarray = np.array(robots)
         
         # gets blueprint out
         blueprint:tuple = blueprints[blueprint_id]
@@ -348,16 +318,16 @@ def soln_2():
             if robot != GEODE: 
                 # optimization from https://www.reddit.com/r/adventofcode/comments/zpy5rm/2022_day_19_what_are_your_insights_and/
                 # essentially, a robot must be able to pay itself off
-                if gain[robot] * time_left + resources[robot] >= time_left * blueprint[-1][robot]:
+                if robots[robot] * time_left + resources[robot] >= time_left * blueprint[-1][robot]:
                     continue
 
             # vectorizes current robot cost
-            robot_cost:np.ndarray = blueprint[robot]
+            robot_cost:tuple = blueprint[robot]
             # checks if we produce all resources for this robot
-            if np.logical_and(robot_cost, np.logical_not(gain)).any():
+            if np.logical_and(robot_cost, np.logical_not(robots)).any():
                 continue
             # net resources if we build a robot
-            net:np.ndarray = resources - robot_cost
+            net:list = [resources[i] - robot_cost[i] for i in range(3)]
             # removes positive values
             np.clip(net, a_min=None, a_max=0)
             
@@ -367,12 +337,12 @@ def soln_2():
                     net[resource] = 0
                 else:
                     # turns to achieve net with current gain
-                    time:float = net[resource] / gain[resource]
+                    time:float = net[resource] / robots[resource]
                     # ceilings the value to calculate min terms needed
                     net[resource] = ceil(time * -1)
             
             # calculates turns needed to get all resources AND build
-            turns:int = net.max() + 1
+            turns:int = max(net) + 1
             
             # if turns > turns left, 0 more geodes gotten
             if turns + 1 >= time_left:
@@ -393,7 +363,7 @@ def soln_2():
                     new_robots:tuple = tuple(new_robots)
                 
                 value += find_max_blueprint(
-                    blueprint_id, tuple(resources - robot_cost + (gain * turns)), 
+                    blueprint_id, tuple([resources[i] - robot_cost[i] + (robots[i] * turns) for i in range(3)]), 
                     new_robots, value + current_value, time_left - turns
                 )          
             
