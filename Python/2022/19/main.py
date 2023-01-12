@@ -341,13 +341,10 @@ def soln_2():
             # accounts for build time
             turns += 1
             
+            # declared to save operations from a boolean check
+            value:int = 0
             # if turns > turns left, 0 more geodes gotten
-            if turns + 1 >= time_left:
-                value:int = 0
-            else:
-                # declared to save operations from a boolean check
-                value:int = 0
-
+            if turns + 1 < time_left:
                 # if building a geode robot, credit immediately to not store Geode robot population
                 if robot == GEODE:
                     value += time_left - turns
