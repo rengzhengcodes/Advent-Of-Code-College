@@ -326,21 +326,8 @@ def soln_2():
             # checks if we produce all resources for this robot
             if any([robot_cost[i] and not robots[i] for i in range(3)]):
                 continue
-            # net resources if we build a robot, removing positive values
-            net:list = [0 if robot_cost[i] < resources[i] else resources[i] - robot_cost[i] for i in range(3)]
-            
-            # calculates the turns to build the robot with negative net values
-            for resource in range(len(net)):
-                if net[resource] >= 0:
-                    net[resource] = 0
-                else:
-                    # turns to achieve net with current gain
-                    time:float = net[resource] / robots[resource]
-                    # ceilings the value to calculate min terms needed
-                    net[resource] = ceil(time * -1)
-            
-            # calculates turns needed to get all resources AND build
-            turns:int = max(net) + 1
+            # calculates turns to get all resources AND build
+            turns:int = max([0 if robot_cost[i] < resources[i] or robots[i] == 0 else ceil(-1 * (resources[i] - robot_cost[i]) / robots[i]) for i in range(3)]) + 1
             
             # if turns > turns left, 0 more geodes gotten
             if turns + 1 >= time_left:
