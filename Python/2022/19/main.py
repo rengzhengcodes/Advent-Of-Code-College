@@ -246,7 +246,7 @@ def soln_2():
                 geode_ore_cost, geode_obsidian_cost
         ) in blueprint_book:
             # cost in np.uint 16, 5 bits per building resource.
-            blueprints[np.uint8(blueprintID)] = (
+            blueprints[blueprintID] = (
                 # ore robot cost
                 (ore_ore_cost, 0, 0),
                 # clay robot cost
@@ -324,12 +324,10 @@ def soln_2():
             # vectorizes current robot cost
             robot_cost:tuple = blueprint[robot]
             # checks if we produce all resources for this robot
-            if np.logical_and(robot_cost, np.logical_not(robots)).any():
+            if any([robot_cost[i] and not robots[i] for i in range(3)]):
                 continue
-            # net resources if we build a robot
-            net:list = [resources[i] - robot_cost[i] for i in range(3)]
-            # removes positive values
-            np.clip(net, a_min=None, a_max=0)
+            # net resources if we build a robot, removing positive values
+            net:list = [0 if robot_cost[i] < resources[i] else resources[i] - robot_cost[i] for i in range(3)]
             
             # calculates the turns to build the robot with negative net values
             for resource in range(len(net)):
