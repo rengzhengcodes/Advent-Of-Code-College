@@ -321,13 +321,27 @@ def soln_2():
                 if robots[robot] * time_left + resources[robot] >= time_left * blueprint[-1][robot]:
                     continue
 
-            # vectorizes current robot cost
+            # pulls out current robot cost
             robot_cost:tuple = blueprint[robot]
-            # checks if we produce all resources for this robot
-            if any([robot_cost[i] and not robots[i] for i in range(3)]):
+            # calculates turns to get all resources
+            turns:int = 0
+            cant_make:bool = False
+            for i in range(len(robots)):
+                # checks if we produce all resources for this robot
+                if robot_cost[i] and not robots[i]:
+                    cant_make = True
+                    break
+                # checks if costs more than we have, and div by 0 check
+                if robot_cost[i] > resources[i] and robots[i] != 0:
+                    # calculates turns it takes if we need to produce
+                    temp:int = ceil(-1 * (resources[i] - robot_cost[i]) / robots[i])
+                    # replaces turns needed if turns needed for this resource is greater than the others
+                    if temp > turns:
+                        turns = temp
+            if cant_make:
                 continue
-            # calculates turns to get all resources AND build
-            turns:int = max([0 if robot_cost[i] < resources[i] or robots[i] == 0 else ceil(-1 * (resources[i] - robot_cost[i]) / robots[i]) for i in range(3)]) + 1
+            # accounts for build time
+            turns += 1
             
             # if turns > turns left, 0 more geodes gotten
             if turns + 1 >= time_left:
