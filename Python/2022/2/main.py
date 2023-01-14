@@ -47,7 +47,7 @@ def soln_1():
     print(points)
     copy_ans(points)
 
-# soln_1()
+soln_1()
 
 def soln_2():
     # score from each choice

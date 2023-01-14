@@ -104,7 +104,7 @@ def soln_1():
     print(solution)
     copy_ans(solution)
                    
-# soln_1()
+soln_1()
 
 def soln_2():
     with open("input.txt", 'r') as file:

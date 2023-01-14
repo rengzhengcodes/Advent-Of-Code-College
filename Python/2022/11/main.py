@@ -197,7 +197,7 @@ def soln_1():
     print(monkey_business)
     copy_ans(monkey_business)
 
-# soln_1()
+soln_1()
 
 def soln_2():
         # parses input

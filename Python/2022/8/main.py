@@ -73,7 +73,7 @@ def soln_1():
     print(visible_trees)
     copy_ans(visible_trees)
 
-# soln_1()
+soln_1()
 
 def soln_2():
     with open("input.txt", 'r') as file:

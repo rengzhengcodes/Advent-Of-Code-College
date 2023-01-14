@@ -111,7 +111,7 @@ def soln_1():
     print(num_sand)
     copy_ans(num_sand)
 
-# soln_1()
+soln_1()
 
 def soln_2():
     # parses input

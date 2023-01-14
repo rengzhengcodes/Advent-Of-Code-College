@@ -21,7 +21,7 @@ def soln_1():
     
     copy_ans(max(total_cals))
  
-# soln_1()
+soln_1()
 
 def soln_2():
     # preprocessing on file to isolate elfs

@@ -28,7 +28,7 @@ def soln_1():
     print(overlaps)
     copy_ans(overlaps)
 
-# soln_1()
+soln_1()
 
 def soln_2():
     with open("input.txt", 'r') as file:
