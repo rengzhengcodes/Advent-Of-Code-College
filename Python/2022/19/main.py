@@ -256,7 +256,7 @@ def soln_2():
     """
     max_branch:dict = dict()
 
-    def encode(data:tuple[int]) -> np.uint64:
+    def encode(data:tuple[int]) -> np.uint32:
         """
         Enocdes a tuple of form (ORE, CLAY, OBSI) into one np.uint32 in 10 bit increments with 2 leading 0s
         
@@ -291,16 +291,16 @@ def soln_2():
 
     @cache
     def find_max_blueprint(
-            blueprint_id:int, resources:np.uint32, robots:np.uint32, current_value:int, time_left:int=32
+            blueprint_id:int, mats:np.uint32, bots:np.uint32, current_value:int, time_left:int=32
         ) -> int:
         """
         Finds the max geodes in a given time
 
         blueprint_id:int
             The id of the blueprint
-        resources:np.uint32
+        mats:np.uint32
             (ore, clay, obsidian)
-        robot_count:np.uint32
+        bots:np.uint32
             (ore, clay, obsidian)
         current_value:int
             Guaranteed value of this branch
@@ -309,9 +309,6 @@ def soln_2():
         
         Returns: max geodes from this point
         """
-        resources:tuple = tuple([decode(resources, resource) for resource in range(3)])
-        robots:tuple = tuple([decode(robots, resource) for resource in range(3)])
-
         # end condition: times up! (Or it's 1 and nothing done matters)
         # end condition: best possible Geode gain is worst than best current branch
         if time_left <= 1 or time_left * (time_left - 1) / 2 + current_value <= max_branch[id]:
@@ -326,7 +323,7 @@ def soln_2():
         for robot in range(4):
             # optimization from https://www.reddit.com/r/adventofcode/comments/zpy5rm/2022_day_19_what_are_your_insights_and/
             # essentially, a robot must be able to pay itself off
-            if robot != GEODE and robots[robot] * time_left + resources[robot] >= time_left * blueprint[-1][robot]:
+            if robot != GEODE and decode(bots, robot) * time_left + decode(mats, robot) >= time_left * blueprint[-1][robot]:
                 continue
 
             # pulls out current robot cost
@@ -334,15 +331,15 @@ def soln_2():
             # calculates turns to get all resources
             turns:int = 0
             cant_make:bool = False
-            for i in range(len(robots)):
+            for i in range(3):
                 # checks if we produce all resources for this robot
-                if robot_cost[i] and not robots[i]:
+                if robot_cost[i] and not decode(bots, i):
                     cant_make = True
                     break
                 # checks if costs more than we have, and div by 0 check
-                if robot_cost[i] > resources[i] and robots[i] != 0:
+                if robot_cost[i] > decode(mats, i) and decode(bots, i) != 0:
                     # calculates turns it takes if we need to produce
-                    temp:int = ceil(-1 * (resources[i] - robot_cost[i]) / robots[i])
+                    temp:int = ceil(-1 * (decode(mats, i) - robot_cost[i]) / decode(bots, i))
                     # replaces turns needed if turns needed for this resource is greater than the others
                     if temp > turns:
                         turns = temp
@@ -358,17 +355,15 @@ def soln_2():
                 # if building a geode robot, credit immediately to not store Geode robot population
                 if robot == GEODE:
                     value += time_left - turns
-                    new_robots:tuple = robots     
+                    new_robots:np.uint32 = bots     
                 # else store robot count
                 else:
                     # robots after build
-                    new_robots:list = list(robots)
-                    new_robots[robot] += 1
-                    new_robots:tuple = tuple(new_robots)
+                    new_robots:np.uint32 = bots + (1 << (robot * 10))
                 
                 value += find_max_blueprint(
-                    blueprint_id, encode(tuple([resources[i] - robot_cost[i] + (robots[i] * turns) for i in range(3)])), 
-                    encode(new_robots), value + current_value, time_left - turns
+                    blueprint_id, encode(tuple([decode(mats, i) - robot_cost[i] + (decode(bots, i) * turns) for i in range(3)])), 
+                    new_robots, value + current_value, time_left - turns
                 )          
             
             if value > max_EV:
