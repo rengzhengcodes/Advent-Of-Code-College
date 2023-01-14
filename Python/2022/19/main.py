@@ -278,7 +278,7 @@ def soln_2():
         """
         # end condition: times up! (Or it's 1 and nothing done matters)
         # end condition: best possible Geode gain is worst than best current branch
-        if time_left <= 1 or time_left * (time_left - 1) / 2 + current_value <= max_branch[id]:
+        if time_left * (time_left - 1) / 2 + current_value <= max_branch[id]:
             return 0
         # tracks max branch gain
         max_EV:int = 0
