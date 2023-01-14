@@ -256,18 +256,51 @@ def soln_2():
     """
     max_branch:dict = dict()
 
+    def encode(data:tuple[int]) -> np.uint64:
+        """
+        Enocdes a tuple of form (ORE, CLAY, OBSI) into one np.uint32 in 10 bit increments with 2 leading 0s
+        
+        data:tuple[int]
+            The data to be encoded in ORE, CLAY, OBSI order.
+        
+        return: np.uint32
+            np.uint32 encoding the data in OBSI_CLAY_ORE order
+        """
+        answer:np.uint32 = np.uint32(0)
+        offset:int = 0
+        for resource in data:
+            answer = answer | (resource << (10 * offset))
+            offset += 1
+        return answer
+            
+    def decode(data:np.uint32, resource:int) -> np.uint32:
+        """
+        Decodes the data from encode based on fixed resource type. Encode expected of form (ORE, CLAY, OBSI)
+
+        data:np.uint32
+            The data bitstring.
+        resource:int
+            The number corresponding to resource
+        
+        return: np.uint32
+            Prevents errors in bitshifts for reencode options
+        """
+        assert resource in range(3)
+
+        return (data & (0x3FF << (resource * 10))) >> (resource * 10)
+
     @cache
     def find_max_blueprint(
-            blueprint_id:int, resources:tuple, robots:tuple, current_value:int, time_left:int=32
+            blueprint_id:int, resources:np.uint32, robots:np.uint32, current_value:int, time_left:int=32
         ) -> int:
         """
         Finds the max geodes in a given time
 
         blueprint_id:int
             The id of the blueprint
-        resources:tuple
+        resources:np.uint32
             (ore, clay, obsidian)
-        robot_count:tuple
+        robot_count:np.uint32
             (ore, clay, obsidian)
         current_value:int
             Guaranteed value of this branch
@@ -276,6 +309,9 @@ def soln_2():
         
         Returns: max geodes from this point
         """
+        resources:tuple = tuple([decode(resources, resource) for resource in range(3)])
+        robots:tuple = tuple([decode(robots, resource) for resource in range(3)])
+
         # end condition: times up! (Or it's 1 and nothing done matters)
         # end condition: best possible Geode gain is worst than best current branch
         if time_left <= 1 or time_left * (time_left - 1) / 2 + current_value <= max_branch[id]:
@@ -331,8 +367,8 @@ def soln_2():
                     new_robots:tuple = tuple(new_robots)
                 
                 value += find_max_blueprint(
-                    blueprint_id, tuple([resources[i] - robot_cost[i] + (robots[i] * turns) for i in range(3)]), 
-                    new_robots, value + current_value, time_left - turns
+                    blueprint_id, encode(tuple([resources[i] - robot_cost[i] + (robots[i] * turns) for i in range(3)])), 
+                    encode(new_robots), value + current_value, time_left - turns
                 )          
             
             if value > max_EV:
@@ -350,7 +386,7 @@ def soln_2():
         # prevents keyerror
         max_branch[id] = 0
         # calculation
-        max_geodes:int = find_max_blueprint(id, (0, 0, 0), (1, 0, 0), 0)
+        max_geodes:int = find_max_blueprint(id, encode((0, 0, 0)), encode((1, 0, 0)), 0)
         quality_product *= max_geodes
         find_max_blueprint.cache_clear()
     
