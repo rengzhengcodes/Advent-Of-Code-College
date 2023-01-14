@@ -259,7 +259,6 @@ def soln_2():
     """
     max_branch:dict = dict()
 
-    @cache
     def find_max_blueprint(
             blueprint_id:int, resources:tuple, robots:tuple, current_value:int, time_left:int=32
         ) -> int:
@@ -279,6 +278,9 @@ def soln_2():
         
         Returns: max geodes from this point
         """
+        key:tuple = (blueprint_id, resources, robots, time_left)
+        if key in cache:
+            return cache[key]
         # end condition: times up! (Or it's 1 and nothing done matters)
         # end condition: best possible Geode gain is worst than best current branch
         if time_left * (time_left - 1) / 2 + current_value <= max_branch[id]:
@@ -348,17 +350,20 @@ def soln_2():
         if max_EV + current_value > max_branch[id]:
             max_branch[id] = max_EV + current_value
         
+        # caches
+        cache[key] = max_EV
         # returns max subbranch
         return max_EV
     
     quality_product:int = 1
     for id in range(1, 4):
+        # cache
+        cache = dict()
         # prevents keyerror
         max_branch[id] = 0
         # calculation
         max_geodes:int = find_max_blueprint(id, (0, 0, 0), (1, 0, 0), 0)
         quality_product *= max_geodes
-        find_max_blueprint.cache_clear()
     
     print(quality_product)
     copy_ans(int(quality_product))
