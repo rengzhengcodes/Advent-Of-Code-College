@@ -300,11 +300,14 @@ def soln_2():
             cant_make:bool = False
             for i in range(len(robots)):
                 # checks if we produce all resources for this robot
-                if robot_cost[i] and not robots[i]:
-                    cant_make = True
-                    break
-                # checks if costs more than we have, and div by 0 check
-                if robot_cost[i] > resources[i] and robots[i] != 0:
+                if not robots[i]:
+                    # makes sure we make the bots
+                    if robot_cost[i]:
+                        cant_make = True
+                        break
+                    # else prevents later div by 0 error
+                # checks if costs more than we have
+                if robot_cost[i] > resources[i]:
                     # calculates turns it takes if we need to produce
                     temp:int = ceil(-1 * (resources[i] - robot_cost[i]) / robots[i])
                     # replaces turns needed if turns needed for this resource is greater than the others
