@@ -235,8 +235,6 @@ def soln_2():
         return: np.uint32
             Prevents errors in bitshifts for reencode options
         """
-        assert resource in range(3)
-
         return (data & (0x3FF << (resource * 10))) >> (resource * 10)
     
     # parses input
