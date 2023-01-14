@@ -362,8 +362,7 @@ def soln_2():
                     new_robots:np.uint32 = bots + (1 << (robot * 10))
                 
                 value += find_max_blueprint(
-                    blueprint_id, encode(tuple([decode(mats, i) - decode(cost, i) + (decode(bots, i) * turns) for i in range(3)])), 
-                    new_robots, value + current_value, time_left - turns
+                    blueprint_id, mats + bots * turns - cost, new_robots, value + current_value, time_left - turns
                 )          
             
             if value > max_EV:
