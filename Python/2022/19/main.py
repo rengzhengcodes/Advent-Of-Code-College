@@ -203,7 +203,7 @@ def soln_1():
     print(total_quality)
     copy_ans(int(total_quality))
 
-soln_1()
+# soln_1()
 
 def soln_2():
     def encode(data:tuple[int]) -> np.uint32:
@@ -215,6 +215,10 @@ def soln_2():
         
         return: np.uint32
             np.uint32 encoding the data in OBSI_CLAY_ORE order
+
+
+        ADDITION AND MULTIPLICATION SAFE
+            Positive values work like regular adding with risky overflow. Negative values can have bad underflow errors
         """
         answer:np.uint32 = np.uint32(0)
         offset:int = 0
@@ -321,7 +325,7 @@ def soln_2():
         for robot in range(4):
             # optimization from https://www.reddit.com/r/adventofcode/comments/zpy5rm/2022_day_19_what_are_your_insights_and/
             # essentially, a robot must be able to pay itself off
-            if robot != GEODE and decode(bots, robot) * time_left + decode(mats, robot) >= time_left * decode(blueprint[-1], robot):
+            if robot != GEODE and decode(bots * time_left + mats, robot) >= time_left * decode(blueprint[-1], robot):
                 continue
 
             # pulls out current robot cost
