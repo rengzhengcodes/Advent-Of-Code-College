@@ -340,9 +340,9 @@ def soln_2():
         
         # if we have improvement on max_branch, replace max_branch, else kill branch
         if max_EV + current_value > max_branch[id]:
-            # returns max subbranch
             max_branch[id] = max_EV + current_value
         
+        # returns max subbranch
         return max_EV
     
     quality_product:int = 1
