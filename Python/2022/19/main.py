@@ -124,7 +124,7 @@ def soln_1():
         """
         # end condition: times up! (Or it's 1 and nothing done matters)
         # end condition: best possible Geode gain is worst than best current branch
-        if time_left <= 1 or time_left * (time_left - 1) / 2 + current_value <= max_branch[id]:
+        if time_left * (time_left - 1) / 2 + current_value <= max_branch[id]:
             return 0
         # tracks max branch gain
         max_EV:int = 0
@@ -146,11 +146,14 @@ def soln_1():
             cant_make:bool = False
             for i in range(len(robots)):
                 # checks if we produce all resources for this robot
-                if robot_cost[i] and not robots[i]:
-                    cant_make = True
-                    break
-                # checks if costs more than we have, and div by 0 check
-                if robot_cost[i] > resources[i] and robots[i] != 0:
+                if not robots[i]:
+                    # makes sure we make the bots
+                    if robot_cost[i]:
+                        cant_make = True
+                        break
+                    # else prevents later div by 0 error
+                # checks if costs more than we have
+                if robot_cost[i] > resources[i]:
                     # calculates turns it takes if we need to produce
                     temp:int = ceil(-1 * (resources[i] - robot_cost[i]) / robots[i])
                     # replaces turns needed if turns needed for this resource is greater than the others
@@ -186,9 +189,9 @@ def soln_1():
         
         # if we have improvement on max_branch, replace max_branch, else kill branch
         if max_EV + current_value > max_branch[id]:
-            # returns max subbranch
             max_branch[id] = max_EV + current_value
         
+        # returns max subbranch
         return max_EV
     
     total_quality:int = 0
